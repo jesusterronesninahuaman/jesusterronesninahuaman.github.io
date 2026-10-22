@@ -1,2102 +1,503 @@
 <!DOCTYPE html>
-<html lang="es-PE" class="scroll-smooth"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
-        window.__firebase_config = firebaseConfig;
-        window.__initial_auth_token = initialAuthToken;
-        window.__app_id = appId;
-            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwNDM1NTg3NjE1ODE0NzQ1MDk5OSIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzljNDk5ZDExMzJiN2MyOTBfaW5kZXguaHRtbC03MDUifSwiZXhwIjoxNzkyNjc5NDgxLCJpYXQiOjE3OTI2NzU4ODEsImFsZyI6IlJTMjU2In0.cdNU7jgWHyE3vB4V1B2N1x1CbHtUlv-te1SxIc45A5-eoNNBs6MVFZkn6w6WxHpzbZus12ypkv5YjYBi0nzH5rQNNbCPZG5GLeUdTm674zpktBwv5icGopCxMQhwOPJW19sfty1ZtbMXMfH5ED_acLd5Y9lpq4flSD8CS4dKTGZb9FyEFK0zMDa2ATbDat6i-uqJ8QW67ipOXPNJCvldR-dQcAh8udaLgLEXC8yeRZWmEnMqo7Cyw9UUvEo0lHF5qSThu5AfG8K86cRigeMUzhq_EVSWhORTyoivFZdgjE6AkDPp2xs9mbD-CYIixqV0iHw70oAqUM8I73R_MmTRYg","c_9c499d1132b7c290_index.html-705")</script><script data-bard-client-injected="true">
-  document.addEventListener('input', (event) => {
-    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
-      const clonedDoc = document.cloneNode(true);
-      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
-      injectedScripts.forEach(el => el.remove());
-      window.parent.postMessage({
-        type: 'inlineEdit',
-        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
-      }, '*');
-    }
-  });
-</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
-</script><script data-bard-client-injected="true">(function() {
-  const SCROLL_KEYS = new Set([
-    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
-  ]);
-  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
-
-  function isTextEntryTarget(target) {
-    if (!target) return false;
-    const tagName = target.tagName;
-    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
-        tagName === 'SELECT' || target.isContentEditable === true;
-  }
-
-  // An element absorbs the key only if it both overflows on the axis being
-  // scrolled and is configured to scroll on that axis. The cheap dimension
-  // test runs first because getComputedStyle forces a style recalc, and this
-  // runs on every keypress. Each axis is read from its own longhand: the
-  // 'overflow' shorthand serializes as two values when the axes differ, which
-  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
-  function canScroll(node, horizontal) {
-    const overflows = horizontal ? node.scrollWidth > node.clientWidth
-                                 : node.scrollHeight > node.clientHeight;
-    if (!overflows) return false;
-    const style = window.getComputedStyle(node);
-    const overflow = horizontal ? style.overflowX : style.overflowY;
-    return overflow === 'auto' || overflow === 'scroll';
-  }
-
-  // Walks up from the event target so nested scrollers keep their behavior.
-  // <body> is included because pages that pin the root height make it the
-  // scroll container.
-  function hasScrollableAncestor(target, horizontal) {
-    let node = target;
-    while (node && node !== document.documentElement) {
-      if (canScroll(node, horizontal)) return true;
-      node = node.parentElement;
-    }
-    return false;
-  }
-
-  function rootCanScroll(horizontal) {
-    const scroller = document.scrollingElement || document.documentElement;
-    if (!scroller) return false;
-    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
-    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
-                      : scroller.scrollHeight > window.innerHeight + 1;
-  }
-
-  window.addEventListener('keydown', function(event) {
-    if (!SCROLL_KEYS.has(event.key)) return;
-    if (event.defaultPrevented) return;
-    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
-    // reserved for shortcuts, so none of them are scroll intent.
-    if (event.altKey || event.metaKey || event.ctrlKey) return;
-
-    const target = event.target;
-    if (isTextEntryTarget(target)) return;
-
-    // Anything that can still absorb the scroll gets to keep it.
-    const horizontal = HORIZONTAL_KEYS.has(event.key);
-    if (rootCanScroll(horizontal)) return;
-    if (hasScrollableAncestor(target, horizontal)) return;
-
-    event.preventDefault();
-  }, {capture: true, passive: false});
-})();</script><script data-bard-client-injected="true">(function() {
-  // Ensure this script is executed only once
-  if (window.firebaseAuthBridgeScriptLoaded) {
-    return;
-  }
-  window.firebaseAuthBridgeScriptLoaded = true;
-
-  let nextTokenPromiseId = 0;
-
-  // Stores { resolve, reject } for ongoing token requests
-  const pendingTokenPromises = {};
-
-  // Listen for messages from the Host Application
-  window.addEventListener('message', function(event) {
-
-    const messageData = event.data;
-
-  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
-      const { success, token, error, promiseId } = messageData ?? {};
-      if (pendingTokenPromises[promiseId]) {
-        if (success) {
-          pendingTokenPromises[promiseId].resolve(token);
-        } else {
-          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
-        }
-        delete pendingTokenPromises[promiseId];
-      }
-    }
-  });
-
-  // Expose a function for the Generated App to request a new Firebase token
-  window.requestNewFirebaseToken = function() {
-    const currentPromiseId = nextTokenPromiseId++;
-    const promise = new Promise((resolve, reject) => {
-      pendingTokenPromises[currentPromiseId] = { resolve, reject };
-    });
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({
-        type: 'REQUEST_NEW_FIREBASE_TOKEN',
-        promiseId: currentPromiseId
-      }, '*');
-    } else {
-      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
-      delete pendingTokenPromises[currentPromiseId];
-    }
-    return promise;
-  };
-})();</script><script data-bard-client-injected="true">
-let realOriginalGetUserMedia = null;
-if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
-}
-
-(function() {
-  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
-    try {
-      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
-        get: function() {
-          return undefined; // Or throw an error
-        },
-        configurable: false
-      });
-    } catch (error) {
-      console.error("Error defining prototype getter:", error);
-    }
-  }
-})();
-
-(function() {
-  const pendingMediaResolvers = {};
-  let nextMediaPromiseId = 0;
-
-  function requestMediaPermissions(constraints) {
-    const mediaPromiseId = nextMediaPromiseId++;
-    const promise = new Promise((resolve, reject) => {
-      pendingMediaResolvers[mediaPromiseId] = (granted) => {
-        delete pendingMediaResolvers[mediaPromiseId];
-        resolve(granted);
-      };
-    });
-
-    window.parent.postMessage({
-      type: 'requestMediaPermission',
-      constraints: constraints,
-      promiseId: mediaPromiseId,
-    }, '*');
-
-    return promise;
-  }
-
-  let originalGetUserMedia = realOriginalGetUserMedia;
-
-  function interceptGetUserMedia() {
-    if (navigator.mediaDevices) {
-      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
-        value: function(constraints) {
-          return requestMediaPermissions(constraints).then((granted) => {
-            if (granted) {
-              if (originalGetUserMedia) {
-                return originalGetUserMedia(constraints);
-              } else {
-                throw new Error("Original getUserMedia not available.");
-              }
-            } else {
-              throw new DOMException('Permission denied', 'NotAllowedError');
-            }
-          });
-        },
-        writable: false,
-        configurable: false
-      });
-    }
-  }
-
-  interceptGetUserMedia();
-
-  const observer = new MutationObserver(function(mutationsList, observer) {
-    for (const mutation of mutationsList) {
-      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
-        interceptGetUserMedia();
-      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
-        interceptGetUserMedia();
-      } else if (mutation.type === 'childList' && mutation.addedNodes) {
-        mutation.addedNodes.forEach(node => {
-          if (node === navigator.mediaDevices) {
-            interceptGetUserMedia();
-          }
-        });
-      }
-    }
-  });
-
-  function interceptSpeechRecognition() {
-    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
-      return;
-    }
-
-    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    const SpeechRecognitionWrapper = function(...args) {
-      const recognizer = new OriginalSpeechRecognition(...args);
-      const originalStart = recognizer.start.bind(recognizer);
-
-      recognizer.start = function() {
-        requestMediaPermissions({ audio: true }).then(granted => {
-          if (granted) {
-            originalStart();
-          } else {
-            const errorEvent = new SpeechRecognitionErrorEvent('error');
-            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
-            recognizer.dispatchEvent(errorEvent);
-          }
-        });
-      };
-
-      return recognizer;
-    };
-
-    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
-    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
-
-    if (window.SpeechRecognition) {
-      window.SpeechRecognition = SpeechRecognitionWrapper;
-    }
-    if (window.webkitSpeechRecognition) {
-      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
-    }
-  }
-
-  interceptSpeechRecognition();
-
-  window.addEventListener('message', function(event) {
-    if (event.data) {
-      if (event.data.type === 'resolveMediaPermission') {
-        const { promiseId, granted } = event.data;
-        if (pendingMediaResolvers[promiseId]) {
-          pendingMediaResolvers[promiseId](granted);
-        }
-      }
-    }
-  });
-
-})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
-function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
-
- Copyright The Closure Library Authors.
- SPDX-License-Identifier: Apache-2.0
-*/
-function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
-let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
-null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
-c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
-"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
-Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
-(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
-url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
-</script><script data-bard-client-injected="true">((function(modelInformation) {
-  const originalFetch = window.fetch;
-  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
-  let googleLlmBaseApiUrls = [
-    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
-    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
-    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
-    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
-    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
-    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
-    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
-    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
-    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
-  ];
-  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
-    googleLlmBaseApiUrls.push(
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
-    );
-  });
-  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
-    googleLlmBaseApiUrls.push(
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
-    );
-  });
-  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
-    googleLlmBaseApiUrls.push(
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
-    );
-  });
-  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
-    googleLlmBaseApiUrls.push(
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
-      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
-    );
-  });
-
-  const pendingFetchResolvers = {};
-  let nextPromiseId = 0;
-
-  function handleStringInput(input, optionsArgument) {
-    const actualUrl = input;
-    const fetchCallArgs = [actualUrl, optionsArgument];
-    const effectiveOptions = optionsArgument || {};
-    const bodyForApiKeyCheck = effectiveOptions.body;
-    const bodyForPostMessage = effectiveOptions.body;
-    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
-  }
-
-  function handleRequestInput(input, optionsArgument) {
-    const actualUrl = input.url;
-    const fetchCallArgs = [input, optionsArgument];
-    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
-    let bodyForApiKeyCheck;
-    let bodyForPostMessage;
-
-    if (optionsArgument) {
-      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
-      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
-      if ('body' in optionsArgument) {
-        bodyForApiKeyCheck = optionsArgument.body;
-        bodyForPostMessage = optionsArgument.body;
-      } else {
-        bodyForApiKeyCheck = undefined;
-        bodyForPostMessage = input.body;
-      }
-    } else {
-      bodyForApiKeyCheck = undefined;
-      bodyForPostMessage = input.body;
-    }
-    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
-  }
-
-  window.fetch = function(input, optionsArgument) {
-    let actualUrl;
-    let fetchCallArgs;
-    let effectiveOptions = {};
-    let bodyForApiKeyCheck;
-    let bodyForPostMessage;
-
-    if (typeof input === 'string') {
-      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
-    } else if (input instanceof Request) {
-      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
-    } else {
-      return originalFetch.apply(window, [input, optionsArgument]);
-    }
-
-    effectiveOptions.method = effectiveOptions.method || 'GET';
-    if (!effectiveOptions.headers) {
-      effectiveOptions.headers = new Headers();
-    }
-
-
-    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
-      let apiKeyIsNull = true;
-
-      const regex = new RegExp("models/([^:]+)");
-      const modelNameMatch = actualUrl.match(regex);
-      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
-
-
-      try {
-        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
-        const apiKeyParam = urlObject.searchParams.get('key');
-        if (apiKeyParam) {
-          apiKeyIsNull = false;
-        }
-      } catch (e) {
-        // Continue checks even if URL parsing fails
-      }
-
-      if (apiKeyIsNull && effectiveOptions.headers) {
-        const h = new Headers(effectiveOptions.headers);
-        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
-        if (apiKeyHeaderValue) {
-          apiKeyIsNull = false;
-          return originalFetch.apply(window, fetchCallArgs);
-        }
-      }
-
-      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
-        try {
-          const bodyData = JSON.parse(bodyForApiKeyCheck);
-          if (bodyData && bodyData.apiKey) {
-            apiKeyIsNull = false;
-            return originalFetch.apply(window, fetchCallArgs);
-          }
-        } catch (e) {
-          // Ignore JSON parsing errors
-        }
-      }
-
-      if(apiKeyIsNull) {
-        const promiseId = nextPromiseId++;
-        const promise = new Promise((resolve) => {
-          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
-            delete pendingFetchResolvers[promiseId];
-            resolve(resolvedResponse);
-          };
-        });
-
-        let serializedBodyForPostMessage;
-        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
-            serializedBodyForPostMessage = bodyForPostMessage;
-        } else if (bodyForPostMessage instanceof ReadableStream) {
-            serializedBodyForPostMessage = null;
-        } else {
-            try {
-                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
-            } catch (e) {
-                serializedBodyForPostMessage = null;
-            }
-        }
-
-        const messageOptions = {
-            method: effectiveOptions.method,
-            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
-            body: serializedBodyForPostMessage
-        };
-
-        window.parent.postMessage({
-          type: 'requestFetch',
-          url: actualUrl,
-          modelName: modelName,
-          options: messageOptions,
-          promiseId: promiseId,
-        }, '*');
-
-        return promise;
-      }
-      return originalFetch.apply(window, fetchCallArgs);
-    }
-    return originalFetch.apply(window, fetchCallArgs);
-  };
-
-  window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'resolveFetch') {
-      const { promiseId, response } = event.data;
-      if (pendingFetchResolvers[promiseId]) {
-        try {
-          const reconstructedResponse = new Response(response.body, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: new Headers(response.headers),
-          });
-          pendingFetchResolvers[promiseId](reconstructedResponse);
-        } catch (error) {
-          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
-        }
-      }
-    }
-  });
-
-}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
-</script><script data-bard-client-injected="true">(function() {
-  const originalConsoleLog = console.log;
-  const originalConsoleError = console.error;
-
-    /**
-   * Normalizes an error event or a promise rejection reason into a structured error object.
-   * @param {*} errorEventOrReason The error object or reason.
-   * @return {object} Structured error data { message, name, stack }.
-   */
-  function getErrorObject(errorEventOrReason) {
-    if (errorEventOrReason instanceof Error) {
-      return {
-        message: errorEventOrReason.message,
-        name: errorEventOrReason.name,
-        stack: errorEventOrReason.stack,
-      };
-    }
-    // Fallback for non-Error objects.
-    try {
-      return {
-        message: JSON.stringify(errorEventOrReason),
-        name: 'UnknownErrorType',
-        stack: null,
-      };
-    } catch (e) {
-      return {
-        message: String(errorEventOrReason),
-        name: 'UnknownErrorTypeNonStringifiable',
-        stack: null,
-      };
-    }
-  }
-
-  /**
-   * Converts an array of arguments (from log/error) into a single string.
-   * Handles Error objects specially to include their message and stack.
-   * @param {Array<*>} args - Arguments passed to console methods.
-   * @return {string} A string representation of the arguments.
-   */
-  function stringifyArgs(args) {
-    return args
-      .map((arg) => {
-        if (arg instanceof Error) {
-          const {message, stack} = arg;
-          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
-        }
-        if (typeof arg === 'object' && arg !== null) {
-          try {
-            return JSON.stringify(arg);
-          } catch (error) {
-            return '[Circular Object]';
-          }
-        } else {
-          return String(arg);
-        }
-      })
-      .join(' ');
-  }
-
-  console.log = function(...args) {
-    const logString = stringifyArgs(args);
-    window.parent.postMessage({ type: 'log', message: logString }, '*');
-    originalConsoleLog.apply(console, args);
-  };
-
-  console.error = function(...args) {
-    let errorData;
-    if (args.length > 0 && args[0] instanceof Error) {
-      const err = args[0];
-      // If the first arg is an Error, capture its details.
-      errorData = {
-        type: 'error',
-        source: 'CONSOLE_ERROR',
-        ...getErrorObject(err),
-        rawArgsString: stringifyArgs(args.slice(1)),
-        timestamp: new Date().toISOString(),
-      };
-    } else {
-      // If not an Error object, treat all args as a general error message.
-      errorData = {
-        type: 'error',
-        source: 'CONSOLE_ERROR',
-        message: stringifyArgs(args),
-        name: 'ConsoleLoggedError',
-        stack: null,
-        timestamp: new Date().toISOString(),
-      };
-    }
-    window.parent.postMessage(errorData, '*');
-    originalConsoleError.apply(console, args);
-  };
-
-  // Listen for global unhandled synchronous errors.
-  window.addEventListener('error', function(event) {
-    const errorDetails = event.error ? getErrorObject(event.error) : {
-      message: event.message,
-      name: 'GlobalError',
-      stack: null,
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-    };
-
-    window.parent.postMessage({
-      type: 'error',
-      source: 'global',
-      ...errorDetails,
-      message: errorDetails.message || event.message,
-      timestamp: new Date().toISOString(),
-    }, '*');
-  });
-
-  // Listen for unhandled promise rejections (asynchronous errors).
-  window.addEventListener('unhandledrejection', function(event) {
-    const errorDetails = getErrorObject(event.reason);
-
-    window.parent.postMessage({
-      type: 'error',
-      source: 'unhandledrejection',
-      ...errorDetails,
-      message: errorDetails.message || 'Unhandled Promise Rejection',
-      timestamp: new Date().toISOString(),
-    }, '*');
-  });
-
-})();</script>
+<html lang="es-PE" class="scroll-smooth">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- SEO PRINCIPAL OPTIMIZADO PARA INDEXACIÓN EN GOOGLE -->
-    <title>Jesús Enmanuel Terrones Ninahuaman - Masoterapia Clínica, Fisioterapia y Quiropraxia en Perú</title>
-    <meta name="description" content="Sitio web clínico oficial de Jesús Enmanuel Terrones Ninahuaman. Especialista en Masoterapia Clínica, Fisioterapia, Rehabilitación Física y Charnela Quiropraxia en Perú. Agenda tu evaluación al +51 939 612 446.">
-    <meta name="keywords" content="Jesús Enmanuel Terrones Ninahuaman, Jesus Terrones Ninahuaman, Masoterapia Clínica, Fisioterapia Perú, Rehabilitación Física, Charnela Quiropraxia, Tratamiento Nervio Ciático, Liberación Miofascial Bruxismo, Masaje Descontracturante Clínico, Descarga Muscular Deportiva">
+    <!-- SEO PRINCIPAL OPTIMIZADO PARA GOOGLE -->
+    <title>Jesús Enmanuel Terrones Ninahuaman | Masoterapia y Charnela Quiropraxia en Lima</title>
+    <meta name="description" content="Jesús Enmanuel Terrones Ninahuaman - Especialista en Masoterapia, Masaje Descontracturante, Relajación Muscular y Charnela Quiropraxia en Lima, Perú. Mira mis videos en YouTube @jesusterronesninahuaman y agenda por WhatsApp +51 939 612 446.">
+    <meta name="keywords" content="Jesús Enmanuel Terrones Ninahuaman, Jesus Terrones Ninahuaman, Masoterapia Lima, Charnela Quiropraxia, Masajista Terapéutico, Masaje Descontracturante, Ajuste Quiropráctico, Alivio Muscular, Relajación Muscular, @jesusterronesninahuaman">
     <meta name="author" content="Jesús Enmanuel Terrones Ninahuaman">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    
-    <!-- URL Canónica para GitHub Pages -->
     <link rel="canonical" href="https://jesusterronesninahuaman.github.io/">
 
-    <!-- Open Graph / Facebook / WhatsApp -->
+    <!-- OPEN GRAPH / FACEBOOK / WHATSAPP -->
     <meta property="og:type" content="website">
     <meta property="og:locale" content="es_PE">
-    <meta property="og:site_name" content="Clínica de Masoterapia y Rehabilitación - Jesús Enmanuel Terrones Ninahuaman">
-    <meta property="og:title" content="Jesús Enmanuel Terrones Ninahuaman - Masoterapia Clínica, Fisioterapia y Quiropraxia en Perú">
-    <meta property="og:description" content="Especialista en alivio del dolor muscular, nervio ciático, bruxismo (ATM), descarga deportiva y Charnela Quiropraxia. Mira nuestros casos clínicos en YouTube y agenda al +51 939 612 446.">
+    <meta property="og:site_name" content="Jesús Enmanuel Terrones Ninahuaman | Masoterapia y Quiropraxia">
+    <meta property="og:title" content="Jesús Enmanuel Terrones Ninahuaman | Masoterapia y Charnela Quiropraxia">
+    <meta property="og:description" content="Bienestar físico, masoterapia descontracturante, liberación de tensión muscular y ajuste quiropráctico manual. Videos reales en @jesusterronesninahuaman.">
     <meta property="og:url" content="https://jesusterronesninahuaman.github.io/">
     <meta property="og:image" content="https://i.ytimg.com/vi/smqgteGqXPQ/hqdefault.jpg">
 
-    <!-- Twitter Card -->
+    <!-- TWITTER CARD -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Jesús Enmanuel Terrones Ninahuaman | Masoterapia Clínica y Fisioterapia">
-    <meta name="twitter:description" content="Rehabilitación Física, Masoterapia Clínica y Charnela Quiropraxia en Perú. Citas al WhatsApp +51 939 612 446.">
+    <meta name="twitter:title" content="Jesús Enmanuel Terrones Ninahuaman | Masoterapia y Quiropraxia">
+    <meta name="twitter:description" content="Sesiones de Masoterapia y Charnela Quiropraxia para alivio de tensión muscular y bienestar postural. Mira mis videos de YouTube.">
     <meta name="twitter:image" content="https://i.ytimg.com/vi/smqgteGqXPQ/hqdefault.jpg">
 
-    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
-
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        heading: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        clinical: {
-                            white: '#ffffff',
-                            sky: '#f0f9ff',
-                            aqua: '#f0fdfa',
-                            blue: '#0369a1',
-                            blueDark: '#075985',
-                            teal: '#0d9488',
-                            tealLight: '#ccfbf1',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- DATOS ESTRUCTURADOS SCHEMA.ORG (JSON-LD) PARA GOOGLE SEARCH (MedicalBusiness / PhysicalTherapy / Person) -->
+    <!-- DATOS ESTRUCTURADOS SCHEMA.ORG (JSON-LD) PARA GOOGLE -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
-          "@type": "Person",
-          "@id": "https://jesusterronesninahuaman.github.io/#person",
-          "name": "Jesús Enmanuel Terrones Ninahuaman",
-          "alternateName": [
-            "Jesus Terrones Ninahuaman",
-            "Jesús Terrones Masoterapia Clínica",
-            "Charnela Quiropraxia Jesús Terrones"
-          ],
-          "jobTitle": "Especialista en Masoterapia Clínica, Fisioterapia, Rehabilitación Física y Quiropraxia",
-          "description": "Especialista clínico en terapia manual ortopédica, masoterapia descontracturante, liberación miofascial, fisioterapia deportiva y Charnela Quiropraxia en Perú.",
-          "telephone": "+51939612446",
+          "@type": "HealthAndBeautyBusiness",
+          "@id": "https://jesusterronesninahuaman.github.io/#negocio",
+          "name": "Jesús Enmanuel Terrones Ninahuaman - Masoterapia y Charnela Quiropraxia",
+          "alternateName": "Charnela Quiropraxia y Masoterapia Jesús Terrones",
+          "description": "Servicio especializado en Masoterapia, masaje descontracturante, descarga muscular y técnicas manuales de Quiropraxia para el bienestar físico y alivio de tensiones musculares en Lima, Perú.",
           "url": "https://jesusterronesninahuaman.github.io/",
-          "sameAs": [
-            "https://www.youtube.com/@jesusterronesninahuaman",
-            "https://wa.me/51939612446"
-          ],
-          "knowsAbout": [
-            "Masoterapia Clínica",
-            "Fisioterapia",
-            "Rehabilitación Física",
-            "Charnela Quiropraxia",
-            "Liberación Miofascial",
-            "Tratamiento de Nervio Ciático",
-            "Bruxismo y ATM",
-            "Descarga Muscular Deportiva"
-          ]
-        },
-        {
-          "@type": ["MedicalBusiness", "PhysicalTherapy"],
-          "@id": "https://jesusterronesninahuaman.github.io/#clinic",
-          "name": "Jesús Enmanuel Terrones Ninahuaman - Masoterapia Clínica, Fisioterapia y Quiropraxia",
-          "alternateName": "Charnela Quiropraxia & Masoterapia Clínica",
-          "description": "Unidad especializada en Masoterapia Clínica, Fisioterapia, Rehabilitación Física, Liberación Miofascial y Quiropraxia dirigida por Jesús Enmanuel Terrones Ninahuaman.",
           "telephone": "+51939612446",
-          "url": "https://jesusterronesninahuaman.github.io/",
-          "image": "https://i.ytimg.com/vi/smqgteGqXPQ/hqdefault.jpg",
           "priceRange": "$$",
-          "medicalSpecialty": "PhysicalTherapy",
+          "image": "https://i.ytimg.com/vi/smqgteGqXPQ/hqdefault.jpg",
           "address": {
             "@type": "PostalAddress",
-            "addressCountry": "PE",
-            "addressRegion": "Lima"
-          },
-          "founder": {
-            "@id": "https://jesusterronesninahuaman.github.io/#person"
+            "addressLocality": "Lima",
+            "addressRegion": "Lima",
+            "addressCountry": "PE"
           },
           "sameAs": [
             "https://www.youtube.com/@jesusterronesninahuaman"
           ],
-          "availableService": [
-            {
-              "@type": "MedicalTherapy",
-              "name": "Masoterapia Descontracturante Clínica"
-            },
-            {
-              "@type": "MedicalTherapy",
-              "name": "Tratamiento de Nervio Ciático y Columna"
-            },
-            {
-              "@type": "MedicalTherapy",
-              "name": "Bruxismo y Liberación Miofascial de ATM"
-            },
-            {
-              "@type": "MedicalTherapy",
-              "name": "Descarga Muscular Deportiva"
-            },
-            {
-              "@type": "MedicalTherapy",
-              "name": "Terapia Física Instrumental y Charnela Quiropraxia"
-            }
+          "founder": {
+            "@id": "https://jesusterronesninahuaman.github.io/#persona"
+          }
+        },
+        {
+          "@type": "Person",
+          "@id": "https://jesusterronesninahuaman.github.io/#persona",
+          "name": "Jesús Enmanuel Terrones Ninahuaman",
+          "givenName": "Jesús Enmanuel",
+          "familyName": "Terrones Ninahuaman",
+          "jobTitle": "Especialista en Masoterapia y Quiropraxia",
+          "url": "https://jesusterronesninahuaman.github.io/",
+          "sameAs": [
+            "https://www.youtube.com/@jesusterronesninahuaman"
+          ],
+          "knowsAbout": [
+            "Masoterapia",
+            "Quiropraxia",
+            "Masaje Descontracturante",
+            "Descarga Muscular",
+            "Masaje Relajante y Bienestar Físico"
           ]
         }
       ]
     }
     </script>
 
+    <!-- TAILWIND CSS & ICONOS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Patrón clínico sutil sobre fondo luminoso */
-        .clinical-hero-bg {
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .clinical-grid-bg {
             background-color: #f0f9ff;
-            background-image: 
-                radial-gradient(at 15% 15%, #f0fdfa 0px, transparent 55%),
-                radial-gradient(at 85% 80%, #e0f2fe 0px, transparent 55%),
-                radial-gradient(#0369a1 0.65px, transparent 0.65px);
-            background-size: 100% 100%, 100% 100%, 28px 28px;
-            background-position: 0 0, 0 0, 0 0;
+            background-image: radial-gradient(#bae6fd 1px, transparent 1px);
+            background-size: 24px 24px;
         }
-        /* Proporción 9:16 limpia para YouTube Shorts clínicos */
-        .video-short-container {
-            position: relative;
-            width: 100%;
-            padding-top: 177.77%;
-            background: #f0f9ff;
-            overflow: hidden;
-        }
-        .video-short-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
-        /* Animación suave para botón WhatsApp clínico */
-        .pulse-clinical {
-            box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.6);
-            animation: pulse-teal 2s infinite;
-        }
-        @keyframes pulse-teal {
-            0% {
-                transform: scale(0.98);
-                box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.6);
-            }
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 14px rgba(13, 148, 136, 0);
-            }
-            100% {
-                transform: scale(0.98);
-                box-shadow: 0 0 0 0 rgba(13, 148, 136, 0);
-            }
-        }
-        /* Slider de dolor clínico personalizado */
-        input[type=range].pain-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 10px;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #10b981 0%, #f59e0b 55%, #ef4444 100%);
-            outline: none;
-        }
-        input[type=range].pain-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 4px solid #0369a1;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(3, 105, 161, 0.3);
-            transition: transform 0.15s ease;
-        }
-        input[type=range].pain-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.12);
+        .aspect-9-16 {
+            aspect-ratio: 9 / 16;
         }
     </style>
-<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.bottom-5{bottom:1.25rem}.right-5{right:1.25rem}.top-0{top:0px}.z-10{z-index:10}.z-40{z-index:40}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-8{margin-top:2rem;margin-bottom:2rem}.mb-1{margin-bottom:0.25rem}.mb-1\.5{margin-bottom:0.375rem}.mb-10{margin-bottom:2.5rem}.mb-14{margin-bottom:3.5rem}.mb-2{margin-bottom:0.5rem}.mb-2\.5{margin-bottom:0.625rem}.mb-3{margin-bottom:0.75rem}.mb-3\.5{margin-bottom:0.875rem}.mb-5{margin-bottom:1.25rem}.mb-6{margin-bottom:1.5rem}.mb-9{margin-bottom:2.25rem}.ml-auto{margin-left:auto}.mr-1{margin-right:0.25rem}.mr-1\.5{margin-right:0.375rem}.mr-2{margin-right:0.5rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.mt-12{margin-top:3rem}.mt-2{margin-top:0.5rem}.mt-2\.5{margin-top:0.625rem}.mt-3{margin-top:0.75rem}.mt-3\.5{margin-top:0.875rem}.mt-6{margin-top:1.5rem}.mb-4{margin-bottom:1rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-11{height:2.75rem}.h-12{height:3rem}.h-14{height:3.5rem}.h-16{height:4rem}.h-2\.5{height:0.625rem}.h-20{height:5rem}.h-6{height:1.5rem}.h-9{height:2.25rem}.max-h-\[90vh\]{max-height:90vh}.w-10{width:2.5rem}.w-11{width:2.75rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-2\.5{width:0.625rem}.w-6{width:1.5rem}.w-9{width:2.25rem}.w-full{width:100%}.max-w-0{max-width:0px}.max-w-2xl{max-width:42rem}.max-w-3xl{max-width:48rem}.max-w-7xl{max-width:80rem}.max-w-sm{max-width:24rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}@keyframes ping{75%, 100%{transform:scale(2);opacity:0}}.animate-ping{animation:ping 1s cubic-bezier(0, 0, 0.2, 1) infinite}.cursor-pointer{cursor:pointer}.list-inside{list-style-position:inside}.list-decimal{list-style-type:decimal}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-12{gap:3rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-3\.5{gap:0.875rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.gap-7{gap:1.75rem}.gap-8{gap:2rem}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-3\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.875rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.875rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.scroll-smooth{scroll-behavior:smooth}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-\[\#0369a1\]\/20{border-color:rgb(3 105 161 / 0.2)}.border-red-100{--tw-border-opacity:1;border-color:rgb(254 226 226 / var(--tw-border-opacity, 1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202 / var(--tw-border-opacity, 1))}.border-sky-100{--tw-border-opacity:1;border-color:rgb(224 242 254 / var(--tw-border-opacity, 1))}.border-sky-200{--tw-border-opacity:1;border-color:rgb(186 230 253 / var(--tw-border-opacity, 1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-teal-100{--tw-border-opacity:1;border-color:rgb(204 251 241 / var(--tw-border-opacity, 1))}.border-teal-200{--tw-border-opacity:1;border-color:rgb(153 246 228 / var(--tw-border-opacity, 1))}.border-white\/30{border-color:rgb(255 255 255 / 0.3)}.bg-\[\#0369a1\]{--tw-bg-opacity:1;background-color:rgb(3 105 161 / var(--tw-bg-opacity, 1))}.bg-\[\#0d9488\]{--tw-bg-opacity:1;background-color:rgb(13 148 136 / var(--tw-bg-opacity, 1))}.bg-\[\#f0f9ff\]{--tw-bg-opacity:1;background-color:rgb(240 249 255 / var(--tw-bg-opacity, 1))}.bg-\[\#f0f9ff\]\/50{background-color:rgb(240 249 255 / 0.5)}.bg-\[\#f0fdfa\]{--tw-bg-opacity:1;background-color:rgb(240 253 250 / var(--tw-bg-opacity, 1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.bg-red-600{--tw-bg-opacity:1;background-color:rgb(220 38 38 / var(--tw-bg-opacity, 1))}.bg-sky-50{--tw-bg-opacity:1;background-color:rgb(240 249 255 / var(--tw-bg-opacity, 1))}.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}.bg-teal-50{--tw-bg-opacity:1;background-color:rgb(240 253 250 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/20{background-color:rgb(255 255 255 / 0.2)}.bg-white\/80{background-color:rgb(255 255 255 / 0.8)}.bg-white\/95{background-color:rgb(255 255 255 / 0.95)}.bg-gradient-to-b{background-image:linear-gradient(to bottom, var(--tw-gradient-stops))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-\[\#0369a1\]{--tw-gradient-from:#0369a1 var(--tw-gradient-from-position);--tw-gradient-to:rgb(3 105 161 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-\[\#f0f9ff\]{--tw-gradient-from:#f0f9ff var(--tw-gradient-from-position);--tw-gradient-to:rgb(240 249 255 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-\[\#0284c7\]{--tw-gradient-to:rgb(2 132 199 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #0284c7 var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-white{--tw-gradient-to:rgb(255 255 255 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #fff var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-\[\#0d9488\]{--tw-gradient-to:#0d9488 var(--tw-gradient-to-position)}.to-\[\#f0fdfa\]{--tw-gradient-to:#f0fdfa var(--tw-gradient-to-position)}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-7{padding:1.75rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-7{padding-left:1.75rem;padding-right:1.75rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-14{padding-top:3.5rem;padding-bottom:3.5rem}.py-16{padding-top:4rem;padding-bottom:4rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-3{padding-bottom:0.75rem}.pb-4{padding-bottom:1rem}.pb-5{padding-bottom:1.25rem}.pb-8{padding-bottom:2rem}.pr-1{padding-right:0.25rem}.pt-1{padding-top:0.25rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.pt-4{padding-top:1rem}.pt-6{padding-top:1.5rem}.pt-8{padding-top:2rem}.text-left{text-align:left}.text-center{text-align:center}.font-heading{font-family:Plus Jakarta Sans, sans-serif}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-\[1\.15\]{line-height:1.15}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wide{letter-spacing:0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-\[\#0369a1\]{--tw-text-opacity:1;color:rgb(3 105 161 / var(--tw-text-opacity, 1))}.text-\[\#0d9488\]{--tw-text-opacity:1;color:rgb(13 148 136 / var(--tw-text-opacity, 1))}.text-red-300{--tw-text-opacity:1;color:rgb(252 165 165 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-sky-50{--tw-text-opacity:1;color:rgb(240 249 255 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sky-600\/20{--tw-shadow-color:rgb(2 132 199 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-sky-900\/5{--tw-shadow-color:rgb(12 74 110 / 0.05);--tw-shadow:var(--tw-shadow-colored)}.shadow-teal-600\/20{--tw-shadow-color:rgb(13 148 136 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.selection\:bg-\[\#0d9488\] *::selection{--tw-bg-opacity:1;background-color:rgb(13 148 136 / var(--tw-bg-opacity, 1))}.selection\:text-white *::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.selection\:bg-\[\#0d9488\]::selection{--tw-bg-opacity:1;background-color:rgb(13 148 136 / var(--tw-bg-opacity, 1))}.selection\:text-white::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:border-\[\#0369a1\]\/30:hover{border-color:rgb(3 105 161 / 0.3)}.hover\:bg-\[\#075985\]:hover{--tw-bg-opacity:1;background-color:rgb(7 89 133 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#0f766e\]:hover{--tw-bg-opacity:1;background-color:rgb(15 118 110 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#f0f9ff\]:hover{--tw-bg-opacity:1;background-color:rgb(240 249 255 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#f0fdfa\]:hover{--tw-bg-opacity:1;background-color:rgb(240 253 250 / var(--tw-bg-opacity, 1))}.hover\:bg-red-50:hover{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.hover\:bg-red-700:hover{--tw-bg-opacity:1;background-color:rgb(185 28 28 / var(--tw-bg-opacity, 1))}.hover\:bg-sky-100:hover{--tw-bg-opacity:1;background-color:rgb(224 242 254 / var(--tw-bg-opacity, 1))}.hover\:bg-sky-50:hover{--tw-bg-opacity:1;background-color:rgb(240 249 255 / var(--tw-bg-opacity, 1))}.hover\:bg-teal-50:hover{--tw-bg-opacity:1;background-color:rgb(240 253 250 / var(--tw-bg-opacity, 1))}.hover\:bg-teal-100:hover{--tw-bg-opacity:1;background-color:rgb(204 251 241 / var(--tw-bg-opacity, 1))}.hover\:text-\[\#0369a1\]:hover{--tw-text-opacity:1;color:rgb(3 105 161 / var(--tw-text-opacity, 1))}.hover\:text-\[\#0d9488\]:hover{--tw-text-opacity:1;color:rgb(13 148 136 / var(--tw-text-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.hover\:shadow-xl:hover{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.focus\:bg-white:focus{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-\[\#0369a1\]:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(3 105 161 / var(--tw-ring-opacity, 1))}.group:hover .group-hover\:max-w-xs{max-width:20rem}.group:hover .group-hover\:scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:flex{display:flex}.sm\:w-64{width:16rem}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:flex-row{flex-direction:row}.sm\:p-10{padding:2.5rem}.sm\:p-7{padding:1.75rem}.sm\:p-8{padding:2rem}.sm\:p-9{padding:2.25rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-4xl{font-size:2.25rem;line-height:2.5rem}.sm\:text-5xl{font-size:3rem;line-height:1}.sm\:text-base{font-size:1rem;line-height:1.5rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 768px){.md\:inline{display:inline}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-end{align-items:flex-end}.md\:items-center{align-items:center}}@media (min-width: 1024px){.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:col-span-7{grid-column:span 7 / span 7}.lg\:flex{display:flex}.lg\:hidden{display:none}.lg\:w-auto{width:auto}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.lg\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.lg\:flex-row{flex-direction:row}.lg\:items-center{align-items:center}.lg\:px-8{padding-left:2rem;padding-right:2rem}.lg\:py-20{padding-top:5rem;padding-bottom:5rem}.lg\:py-24{padding-top:6rem;padding-bottom:6rem}.lg\:text-4xl{font-size:2.25rem;line-height:2.5rem}.lg\:text-\[46px\]{font-size:46px}}</style></head>
-<body class="bg-white text-slate-700 antialiased selection:bg-[#0d9488] selection:text-white">
+</head>
+<body class="antialiased selection:bg-sky-600 selection:text-white">
 
-    <!-- BARRA SUPERIOR CLÍNICA & ACCESO AL ASISTENTE DE INDEXACIÓN EN GOOGLE -->
-    <div id="clinical-top-bar" class="bg-gradient-to-r from-[#0369a1] via-[#0284c7] to-[#0d9488] text-white text-xs sm:text-sm py-2.5 px-4 shadow-sm">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5">
-                <span class="bg-white/20 backdrop-blur-sm text-white border border-white/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5 text-xs">
-                    <i class="fa-solid fa-staff-snake"></i> Unidad de Terapia Manual y Rehabilitación
-                </span>
-                <span class="hidden md:inline text-sky-50">
-                    Especialista: <strong>Jesús Enmanuel Terrones Ninahuaman</strong> • Atención previa cita
-                </span>
-            </div>
-            <div class="flex items-center gap-2 ml-auto">
-                <button onclick="openSeoModal()" class="bg-white text-[#0369a1] hover:bg-sky-50 font-bold px-3.5 py-1 rounded-lg transition flex items-center gap-1.5 shadow-sm cursor-pointer text-xs">
-                    <i class="fa-brands fa-google text-[#0d9488]"></i> Paso a Paso: Subir a GitHub e Indexar en Google
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- HEADER / NAVEGACIÓN CLÍNICA LUMINOSA -->
+    <!-- CABECERA PRINCIPAL -->
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-sky-100 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <!-- Logo e Identidad Clínica -->
-            <a href="#inicio" class="flex items-center gap-3.5 group">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0369a1] to-[#0d9488] flex items-center justify-center text-white shadow-md shadow-sky-600/20 group-hover:scale-105 transition">
-                    <i class="fa-solid fa-hand-holding-medical text-xl"></i>
+            <a href="#inicio" class="flex items-center gap-3 group">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0369a1] to-[#0d9488] flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-hands-holding-circle text-xl"></i>
                 </div>
                 <div>
-                    <span class="block font-heading font-extrabold text-slate-900 text-base sm:text-lg leading-tight">
-                        Jesús Enmanuel Terrones Ninahuaman
-                    </span>
-                    <span class="block text-xs font-semibold text-[#0d9488] tracking-wide uppercase">
-                        Masoterapia Clínica • Fisioterapia • Charnela Quiropraxia
-                    </span>
+                    <span class="block font-extrabold text-slate-900 text-sm sm:text-base leading-tight">Jesús Enmanuel Terrones Ninahuaman</span>
+                    <span class="block text-xs font-semibold text-[#0d9488]">Masoterapia &amp; Charnela Quiropraxia</span>
                 </div>
             </a>
 
-            <!-- Enlaces Desktop -->
-            <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-600" aria-label="Navegación Clínica">
-                <a href="#inicio" class="hover:text-[#0369a1] transition">Inicio Clínico</a>
-                <a href="#videos-youtube" class="hover:text-[#0369a1] transition flex items-center gap-1.5 text-[#0369a1] bg-[#f0f9ff] px-3 py-1.5 rounded-xl border border-sky-200">
-                    <i class="fa-brands fa-youtube text-red-600"></i> Casos y Videos Reales
+            <nav class="hidden md:flex items-center gap-7 text-sm font-semibold text-slate-600">
+                <a href="#inicio" class="hover:text-[#0369a1] transition">Inicio</a>
+                <a href="#videos-youtube" class="hover:text-[#0369a1] transition flex items-center gap-1.5">
+                    <i class="fa-brands fa-youtube text-red-600"></i> Videos de YouTube
                 </a>
-                <a href="#especialidades" class="hover:text-[#0369a1] transition">Especialidades</a>
-                <a href="#sobre-mi" class="hover:text-[#0369a1] transition">El Especialista</a>
-                <a href="#evaluacion-cita" class="hover:text-[#0369a1] transition">Evaluación y Citas</a>
+                <a href="#servicios" class="hover:text-[#0369a1] transition">Servicios</a>
+                <a href="#sobre-mi" class="hover:text-[#0369a1] transition">Sobre Mí</a>
+                <a href="#contacto" class="hover:text-[#0369a1] transition">Reservar Cita</a>
             </nav>
 
-            <!-- Botón CTA Header -->
-            <div class="hidden sm:flex items-center gap-2.5">
-                <a href="https://wa.me/51939612446?text=Hola%20Lic.%20Jes%C3%BAs%20Enmanuel%2C%20vi%20su%20web%20cl%C3%ADnica%20y%20deseo%20agendar%20una%20evaluaci%C3%B3n%20fisioterap%C3%A9utica" target="_blank" rel="noopener noreferrer" class="bg-[#0d9488] hover:bg-[#0f766e] text-white font-semibold text-sm px-4 py-2.5 rounded-xl shadow-md shadow-teal-600/20 transition flex items-center gap-2">
-                    <i class="fa-brands fa-whatsapp text-lg"></i>
-                    <span>Citas: 939 612 446</span>
+            <div class="flex items-center gap-2.5">
+                <a href="https://www.youtube.com/@jesusterronesninahuaman" target="_blank" rel="noopener" class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 font-bold text-xs transition border border-red-200">
+                    <i class="fa-brands fa-youtube text-base"></i> @jesusterronesninahuaman
+                </a>
+                <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%20Terrones%20Ninahuaman%2C%20vi%20tu%20p%C3%A1gina%20web%20y%20deseo%20informaci%C3%B3n%20sobre%20una%20sesi%C3%B3n%20de%20Masoterapia%20o%20Quiropraxia." target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold text-xs sm:text-sm shadow-sm transition">
+                    <i class="fa-brands fa-whatsapp text-base"></i>
+                    <span>Agendar Cita</span>
                 </a>
             </div>
-
-            <!-- Botón Menú Móvil -->
-            <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="lg:hidden p-2.5 rounded-xl text-[#0369a1] bg-[#f0f9ff] hover:bg-sky-100" aria-label="Abrir menú">
-                <i class="fa-solid fa-bars text-xl"></i>
-            </button>
-        </div>
-
-        <!-- Menú Desplegable Móvil -->
-        <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-sky-100 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
-            <a href="#inicio" onclick="toggleMobileMenu()" class="block py-2.5 px-3.5 rounded-xl font-medium text-slate-700 hover:bg-[#f0f9ff]">Inicio Clínico</a>
-            <a href="#videos-youtube" onclick="toggleMobileMenu()" class="block py-2.5 px-3.5 rounded-xl font-semibold text-[#0369a1] bg-[#f0f9ff]"><i class="fa-brands fa-youtube text-red-600 mr-2"></i>Videos Clínicos (@jesusterronesninahuaman)</a>
-            <a href="#especialidades" onclick="toggleMobileMenu()" class="block py-2.5 px-3.5 rounded-xl font-medium text-slate-700 hover:bg-[#f0f9ff]">Especialidades y Tratamientos</a>
-            <a href="#sobre-mi" onclick="toggleMobileMenu()" class="block py-2.5 px-3.5 rounded-xl font-medium text-slate-700 hover:bg-[#f0f9ff]">Sobre Jesús Enmanuel Terrones</a>
-            <a href="#evaluacion-cita" onclick="toggleMobileMenu()" class="block py-2.5 px-3.5 rounded-xl font-medium text-slate-700 hover:bg-[#f0f9ff]">Evaluación de Dolor y Reserva</a>
-            <button onclick="toggleMobileMenu(); openSeoModal();" class="w-full text-left py-2.5 px-3.5 rounded-xl font-semibold text-[#0d9488] bg-[#f0fdfa] border border-teal-200">
-                <i class="fa-brands fa-google mr-2"></i>Guía Paso a Paso: Aparecer en Google
-            </button>
-            <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20deseo%20agendar%20una%20cita%20de%20masoterapia%20cl%C3%ADnica" target="_blank" rel="noopener noreferrer" class="w-full bg-[#0d9488] text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 shadow">
-                <i class="fa-brands fa-whatsapp text-lg"></i> Agendar por WhatsApp (+51 939 612 446)
-            </a>
         </div>
     </header>
 
-    <main>
-        <!-- HERO PRINCIPAL CON ESTÉTICA DE CLÍNICA DE REHABILITACIÓN MODERNA (FONDO LUMINOSO) -->
-        <section id="inicio" class="relative overflow-hidden clinical-hero-bg border-b border-sky-100 py-14 lg:py-22">
-            <!-- Elementos decorativos médicos suaves -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                    
-                    <!-- Columna Izquierda: Información Clínica y SEO -->
-                    <div class="lg:col-span-7 space-y-6">
-                        <div class="inline-flex items-center gap-2.5 bg-white border border-teal-200 text-[#0d9488] px-4 py-2 rounded-full text-xs sm:text-sm font-bold shadow-sm">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#0d9488] animate-ping"></span>
-                            <i class="fa-solid fa-user-doctor text-[#0369a1]"></i>
-                            Especialista en Masoterapia Clínica y Rehabilitación
-                        </div>
-
-                        <!-- H1 Principal Optimizado para Google -->
-                        <h1 class="font-heading font-extrabold text-3xl sm:text-5xl lg:text-[46px] text-slate-900 leading-[1.15] tracking-tight">
-                            Jesús Enmanuel Terrones Ninahuaman
-                            <span class="block text-[#0369a1] text-2xl sm:text-3xl lg:text-4xl mt-2.5 font-bold">
-                                Masoterapia Clínica, Fisioterapia y Charnela Quiropraxia
-                            </span>
-                        </h1>
-
-                        <p class="text-slate-600 text-base sm:text-lg leading-relaxed max-w-2xl bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-sky-100 shadow-sm">
-                            Atención clínica especializada para el <strong>alivio real del dolor muscular y articular</strong>. Abordaje anatómico y biomecánico en <strong>descompresión del nervio ciático</strong>, <strong>masoterapia descontracturante profunda</strong>, <strong>liberación miofascial (bruxismo/ATM)</strong> y <strong>recuperación deportiva</strong>.
-                        </p>
-
-                        <!-- Botones de Acción Clínica -->
-                        <div class="flex flex-col sm:flex-row gap-4 pt-1">
-                            <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20deseo%20agendar%20una%20evaluaci%C3%B3n%20y%20sesi%C3%B3n%20cl%C3%ADnica" target="_blank" rel="noopener noreferrer" class="bg-[#0d9488] hover:bg-[#0f766e] text-white font-heading font-bold text-base px-7 py-4 rounded-2xl shadow-lg shadow-teal-600/20 transition flex items-center justify-center gap-3">
-                                <i class="fa-brands fa-whatsapp text-2xl"></i>
-                                <span>Reservar Cita Clínica (+51 939 612 446)</span>
-                            </a>
-                            <a href="https://www.youtube.com/@jesusterronesninahuaman" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-[#f0f9ff] border-2 border-[#0369a1]/20 text-[#0369a1] font-heading font-bold text-base px-6 py-4 rounded-2xl shadow-sm transition flex items-center justify-center gap-3">
-                                <i class="fa-brands fa-youtube text-red-600 text-2xl"></i>
-                                <span>Canal Oficial YouTube</span>
-                            </a>
-                        </div>
-
-                        <!-- Tarjetas de Garantía Clínica -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-4">
-                            <div class="bg-white/95 border border-sky-100 p-4 rounded-2xl shadow-sm flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-[#f0f9ff] text-[#0369a1] flex items-center justify-center text-lg shrink-0">
-                                    <i class="fa-solid fa-video"></i>
-                                </div>
-                                <div>
-                                    <div class="font-heading font-extrabold text-lg text-slate-900">+89 Casos</div>
-                                    <div class="text-xs text-slate-500">Documentados en YouTube</div>
-                                </div>
-                            </div>
-                            <div class="bg-white/95 border border-teal-100 p-4 rounded-2xl shadow-sm flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-[#f0fdfa] text-[#0d9488] flex items-center justify-center text-lg shrink-0">
-                                    <i class="fa-solid fa-bone"></i>
-                                </div>
-                                <div>
-                                    <div class="font-heading font-extrabold text-lg text-slate-900">Biomecánica</div>
-                                    <div class="text-xs text-slate-500">Terapia Manual Segura</div>
-                                </div>
-                            </div>
-                            <div class="bg-white/95 border border-sky-100 p-4 rounded-2xl shadow-sm flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-[#f0f9ff] text-[#0369a1] flex items-center justify-center text-lg shrink-0">
-                                    <i class="fa-solid fa-shield-heart"></i>
-                                </div>
-                                <div>
-                                    <div class="font-heading font-extrabold text-lg text-slate-900">Higiene Clínica</div>
-                                    <div class="text-xs text-slate-500">Protocolo Personalizado</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Columna Derecha: Caso Clínico Destacado en Marco Médico Blanco -->
-                    <div class="lg:col-span-5">
-                        <div class="bg-white border-2 border-sky-100 rounded-3xl p-5 shadow-xl shadow-sky-900/5 max-w-sm mx-auto relative">
-                            <!-- Cabecera de Ficha Clínica de Video -->
-                            <div class="flex items-center justify-between mb-3.5 pb-3 border-b border-slate-100">
-                                <div class="flex items-center gap-2.5">
-                                    <div class="w-9 h-9 rounded-xl bg-[#f0fdfa] border border-teal-200 flex items-center justify-center text-[#0d9488]">
-                                        <i class="fa-solid fa-stethoscope"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-extrabold text-slate-900 leading-none">Caso Clínico en Video</p>
-                                        <p class="text-[11px] text-[#0369a1] font-medium mt-0.5">@jesusterronesninahuaman</p>
-                                    </div>
-                                </div>
-                                <a href="https://www.youtube.com/@jesusterronesninahuaman?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-full transition flex items-center gap-1 shadow-sm">
-                                    <i class="fa-brands fa-youtube"></i> Suscribirse
-                                </a>
-                            </div>
-
-                            <!-- Video Embebido Real: Dolor de Ciática -->
-                            <div class="video-short-container rounded-2xl border border-sky-100 shadow-inner">
-                                <iframe src="https://www.youtube.com/embed/smqgteGqXPQ?rel=0" title="¿Dolor de Ciática? Libera el Nervio Ciático con este Ejercicio - Jesús Enmanuel Terrones Ninahuaman" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
-                                </iframe>
-                            </div>
-
-                            <div class="mt-3.5 bg-[#f0f9ff] rounded-xl p-3 border border-sky-100 flex items-center justify-between text-xs">
-                                <span class="font-semibold text-[#0369a1]">
-                                    <i class="fa-solid fa-circle-check text-[#0d9488] mr-1"></i> Descompresión del Nervio Ciático
-                                </span>
-                                <a href="#videos-youtube" class="text-[#0d9488] hover:underline font-bold">Ver más casos →</a>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN 2: GALERÍA DE CASOS REALES Y VIDEOS CLÍNICOS DE YOUTUBE (@jesusterronesninahuaman) -->
-        <section id="videos-youtube" class="py-16 lg:py-24 bg-white border-b border-sky-100">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- HERO PRINCIPAL -->
+    <section id="inicio" class="clinical-grid-bg border-b border-sky-100 py-12 lg:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
                 
-                <!-- Encabezado Clínico -->
-                <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-                    <div>
-                        <div class="inline-flex items-center gap-2 text-[#0369a1] font-bold text-xs uppercase tracking-wider bg-[#f0f9ff] px-3.5 py-1.5 rounded-full mb-3 border border-sky-200">
-                            <i class="fa-brands fa-youtube text-red-600 text-sm"></i> Evidencia Clínica en Video • @jesusterronesninahuaman
-                        </div>
-                        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-slate-900">
-                            Galería de Casos Reales y Videos Clínicos
-                        </h2>
-                        <p class="text-slate-600 mt-2 max-w-2xl">
-                            Procedimientos terapéuticos reales realizados por <strong>Jesús Enmanuel Terrones Ninahuaman</strong>. Selecciona tu patología o zona de dolor para ver el abordaje clínico.
-                        </p>
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-sky-200 text-[#0369a1] text-xs font-bold shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-[#0d9488] animate-pulse"></span>
+                        ESPECIALISTA EN MASOTERAPIA Y QUIROPRAXIA MANUAL
                     </div>
-                    <div class="flex flex-wrap gap-3">
-                        <a href="https://www.youtube.com/@jesusterronesninahuaman" target="_blank" rel="noopener noreferrer" class="bg-[#0369a1] hover:bg-[#075985] text-white font-semibold px-5 py-3 rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
-                            <i class="fa-brands fa-youtube text-red-300 text-lg"></i>
-                            <span>Explorar Canal Completo (+89 Videos)</span>
+
+                    <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                        Jesús Enmanuel <span class="text-[#0369a1]">Terrones Ninahuaman</span>
+                        <span class="block text-xl sm:text-2xl font-bold text-[#0d9488] mt-2">
+                            Masoterapia Terapéutica &amp; Charnela Quiropraxia
+                        </span>
+                    </h1>
+
+                    <p class="text-slate-700 text-base sm:text-lg leading-relaxed max-w-2xl">
+                        Atención personalizada enfocada en el <strong>alivio de contracturas musculares, descarga física, relajación profunda y ajuste quiropráctico manual</strong> para recuperar tu movilidad y bienestar diario. Mira mis sesiones reales en mi canal oficial de YouTube.
+                    </p>
+
+                    <div class="flex flex-wrap gap-3.5 pt-2">
+                        <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20quisiera%20separar%20una%20cita%20de%20Masoterapia%20%2F%20Quiropraxia." target="_blank" rel="noopener" class="inline-flex items-center gap-2.5 px-6 py-4 rounded-2xl bg-[#0369a1] hover:bg-sky-800 text-white font-bold text-sm sm:text-base shadow-lg shadow-sky-900/10 transition">
+                            <i class="fa-brands fa-whatsapp text-xl"></i>
+                            Reservar por WhatsApp (+51 939 612 446)
+                        </a>
+                        <a href="#videos-youtube" class="inline-flex items-center gap-2.5 px-6 py-4 rounded-2xl bg-white hover:bg-sky-50 text-slate-800 font-bold text-sm sm:text-base border border-sky-200 shadow-sm transition">
+                            <i class="fa-brands fa-youtube text-red-600 text-xl"></i>
+                            Ver Mis Videos de YouTube
                         </a>
                     </div>
+
+                    <div class="grid grid-cols-3 gap-4 pt-4 border-t border-sky-200/70">
+                        <div class="bg-white/90 p-3.5 rounded-xl border border-sky-100">
+                            <span class="block font-extrabold text-xl text-[#0369a1]">100%</span>
+                            <span class="text-xs text-slate-600 font-medium">Técnica Manual y Cuidado Personalizado</span>
+                        </div>
+                        <div class="bg-white/90 p-3.5 rounded-xl border border-sky-100">
+                            <span class="block font-extrabold text-xl text-[#0d9488]">YouTube</span>
+                            <span class="text-xs text-slate-600 font-medium">Casos y Sesiones Reales en Video</span>
+                        </div>
+                        <div class="bg-white/90 p-3.5 rounded-xl border border-sky-100">
+                            <span class="block font-extrabold text-xl text-slate-800">Lima, Perú</span>
+                            <span class="text-xs text-slate-600 font-medium">Atención Previa Cita por WhatsApp</span>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Filtros por Patología / Zona Anatómica -->
-                <div class="flex flex-wrap items-center gap-2.5 mb-9" id="video-filters">
-                    <button onclick="filterVideos('todos')" class="filter-btn active bg-[#0369a1] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer" data-filter="todos">
-                        Todas las Patologías (6)
-                    </button>
-                    <button onclick="filterVideos('ciatica')" class="filter-btn bg-[#f0f9ff] hover:bg-sky-100 text-[#0369a1] border border-sky-200 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer" data-filter="ciatica">
-                        Nervio Ciático y Columna
-                    </button>
-                    <button onclick="filterVideos('bruxismo')" class="filter-btn bg-[#f0f9ff] hover:bg-sky-100 text-[#0369a1] border border-sky-200 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer" data-filter="bruxismo">
-                        Bruxismo y Liberación Facial (ATM)
-                    </button>
-                    <button onclick="filterVideos('espalda')" class="filter-btn bg-[#f0f9ff] hover:bg-sky-100 text-[#0369a1] border border-sky-200 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer" data-filter="espalda">
-                        Descontractura de Espalda Alta
-                    </button>
-                    <button onclick="filterVideos('deportiva')" class="filter-btn bg-[#f0f9ff] hover:bg-sky-100 text-[#0369a1] border border-sky-200 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer" data-filter="deportiva">
-                        Masaje Deportivo y Terapia Instrumental
-                    </button>
-                    <button onclick="filterVideos('podal')" class="filter-btn bg-[#f0f9ff] hover:bg-sky-100 text-[#0369a1] border border-sky-200 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer" data-filter="podal">
-                        Fisioterapia Podal y Fascitis
-                    </button>
-                </div>
-
-                <!-- Grid de Videos Clínicos Verticales -->
-                <div id="videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <article class="bg-white rounded-3xl overflow-hidden border-2 border-sky-100 shadow-sm hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col">
-                    <div class="video-short-container border-b border-sky-100">
-                        <iframe loading="lazy" src="https://www.youtube.com/embed/smqgteGqXPQ?rel=0" title="¿Dolor de Ciática? Libera el Nervio Ciático con este Ejercicio - Jesús Enmanuel Terrones Ninahuaman" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
-                        </iframe>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                        <div>
-                            <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-[#0d9488] bg-[#f0fdfa] border border-teal-200 px-3 py-0.5 rounded-full mb-2">
-                                Nervio Ciático y Columna
-                            </span>
-                            <h3 class="font-heading font-bold text-base text-slate-900 leading-snug mb-1.5">
-                                ¿Dolor de Ciática? Libera el Nervio Ciático con este Ejercicio
-                            </h3>
-                            <p class="text-xs text-slate-600 leading-relaxed mb-4">
-                                Maniobra neurodinámica y descompresión clínica para aliviar el dolor irradiado del nervio ciático.
-                            </p>
-                        </div>
-                        <div class="pt-3 border-t border-sky-100 flex items-center justify-between text-xs">
-                            <a href="https://www.youtube.com/shorts/smqgteGqXPQ" target="_blank" rel="noopener noreferrer" class="text-[#0369a1] hover:underline font-bold flex items-center gap-1">
-                                <i class="fa-brands fa-youtube text-red-600"></i> Ver en YouTube
-                            </a>
-                            <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20vi%20su%20video%20cl%C3%ADnico%20%22%C2%BFDolor%20de%20Ci%C3%A1tica%3F%20Libera%20el%20Nervio%20Ci%C3%A1tico%20con%20este%20Ejercicio%22%20y%20deseo%20agendar%20una%20evaluaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="bg-[#f0fdfa] hover:bg-teal-100 text-[#0d9488] border border-teal-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition">
-                                <i class="fa-brands fa-whatsapp"></i> Agendar Cita
+                <!-- VIDEO DESTACADO PRINCIPAL -->
+                <div class="lg:col-span-5">
+                    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-sky-200 shadow-xl max-w-sm mx-auto">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-red-600 animate-ping"></span>
+                                <span class="text-xs font-extrabold uppercase tracking-wider text-slate-700">Sesión Destacada en YouTube</span>
+                            </div>
+                            <a href="https://www.youtube.com/@jesusterronesninahuaman" target="_blank" rel="noopener" class="text-xs font-bold text-[#0369a1] hover:underline">
+                                @jesusterronesninahuaman
                             </a>
                         </div>
-                    </div>
-                </article>
-            
-                <article class="bg-white rounded-3xl overflow-hidden border-2 border-sky-100 shadow-sm hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col">
-                    <div class="video-short-container border-b border-sky-100">
-                        <iframe loading="lazy" src="https://www.youtube.com/embed/6Qj_tnIFSYo?rel=0" title="Alivia el Bruxismo y Dolor de Mandíbula | Liberación Miofascial Facial - Jesús Enmanuel Terrones Ninahuaman" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
-                        </iframe>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                        <div>
-                            <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-[#0d9488] bg-[#f0fdfa] border border-teal-200 px-3 py-0.5 rounded-full mb-2">
-                                Bruxismo y ATM
-                            </span>
-                            <h3 class="font-heading font-bold text-base text-slate-900 leading-snug mb-1.5">
-                                Alivia el Bruxismo y Dolor de Mandíbula | Liberación Miofascial Facial
-                            </h3>
-                            <p class="text-xs text-slate-600 leading-relaxed mb-4">
-                                Terapia manual clínica sobre músculos maseteros y articulación temporomandibular para eliminar tensión facial.
-                            </p>
+                        <div class="rounded-2xl overflow-hidden bg-slate-900 aspect-9-16 shadow-inner">
+                            <iframe 
+                                class="w-full h-full"
+                                src="https://www.youtube.com/embed/smqgteGqXPQ?rel=0" 
+                                title="Sesión de Masoterapia y Quiropraxia - Jesús Enmanuel Terrones Ninahuaman"
+                                loading="lazy"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                allowfullscreen>
+                            </iframe>
                         </div>
-                        <div class="pt-3 border-t border-sky-100 flex items-center justify-between text-xs">
-                            <a href="https://www.youtube.com/shorts/6Qj_tnIFSYo" target="_blank" rel="noopener noreferrer" class="text-[#0369a1] hover:underline font-bold flex items-center gap-1">
-                                <i class="fa-brands fa-youtube text-red-600"></i> Ver en YouTube
-                            </a>
-                            <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20vi%20su%20video%20cl%C3%ADnico%20%22Alivia%20el%20Bruxismo%20y%20Dolor%20de%20Mand%C3%ADbula%20%7C%20Liberaci%C3%B3n%20Miofascial%20Facial%22%20y%20deseo%20agendar%20una%20evaluaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="bg-[#f0fdfa] hover:bg-teal-100 text-[#0d9488] border border-teal-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition">
-                                <i class="fa-brands fa-whatsapp"></i> Agendar Cita
-                            </a>
-                        </div>
+                        <p class="mt-3 text-xs text-slate-600 text-center font-medium">
+                            Liberación de tensión en zona lumbar y ciática mediante masoterapia y quiropraxia.
+                        </p>
                     </div>
-                </article>
-            
-                <article class="bg-white rounded-3xl overflow-hidden border-2 border-sky-100 shadow-sm hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col">
-                    <div class="video-short-container border-b border-sky-100">
-                        <iframe loading="lazy" src="https://www.youtube.com/embed/omq8mwa2Rk8?rel=0" title="Descontractura de Espalda Alta | Liberación de Nudos Musculares - Jesús Enmanuel Terrones Ninahuaman" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
-                        </iframe>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                        <div>
-                            <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-[#0d9488] bg-[#f0fdfa] border border-teal-200 px-3 py-0.5 rounded-full mb-2">
-                                Espalda Alta y Cervicales
-                            </span>
-                            <h3 class="font-heading font-bold text-base text-slate-900 leading-snug mb-1.5">
-                                Descontractura de Espalda Alta | Liberación de Nudos Musculares
-                            </h3>
-                            <p class="text-xs text-slate-600 leading-relaxed mb-4">
-                                Abordaje clínico de tejido profundo para liberar contracturas y puntos gatillo interescapulares.
-                            </p>
-                        </div>
-                        <div class="pt-3 border-t border-sky-100 flex items-center justify-between text-xs">
-                            <a href="https://www.youtube.com/shorts/omq8mwa2Rk8" target="_blank" rel="noopener noreferrer" class="text-[#0369a1] hover:underline font-bold flex items-center gap-1">
-                                <i class="fa-brands fa-youtube text-red-600"></i> Ver en YouTube
-                            </a>
-                            <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20vi%20su%20video%20cl%C3%ADnico%20%22Descontractura%20de%20Espalda%20Alta%20%7C%20Liberaci%C3%B3n%20de%20Nudos%20Musculares%22%20y%20deseo%20agendar%20una%20evaluaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="bg-[#f0fdfa] hover:bg-teal-100 text-[#0d9488] border border-teal-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition">
-                                <i class="fa-brands fa-whatsapp"></i> Agendar Cita
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            
-                <article class="bg-white rounded-3xl overflow-hidden border-2 border-sky-100 shadow-sm hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col">
-                    <div class="video-short-container border-b border-sky-100">
-                        <iframe loading="lazy" src="https://www.youtube.com/embed/pkeRFh6nV1s?rel=0" title="Masaje Deportivo y Recuperación Funcional de Alta Competencia - Jesús Enmanuel Terrones Ninahuaman" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
-                        </iframe>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                        <div>
-                            <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-[#0d9488] bg-[#f0fdfa] border border-teal-200 px-3 py-0.5 rounded-full mb-2">
-                                Fisioterapia Deportiva
-                            </span>
-                            <h3 class="font-heading font-bold text-base text-slate-900 leading-snug mb-1.5">
-                                Masaje Deportivo y Recuperación Funcional de Alta Competencia
-                            </h3>
-                            <p class="text-xs text-slate-600 leading-relaxed mb-4">
-                                Descarga muscular clínica y movilización articular para optimizar la recuperación del deportista.
-                            </p>
-                        </div>
-                        <div class="pt-3 border-t border-sky-100 flex items-center justify-between text-xs">
-                            <a href="https://www.youtube.com/shorts/pkeRFh6nV1s" target="_blank" rel="noopener noreferrer" class="text-[#0369a1] hover:underline font-bold flex items-center gap-1">
-                                <i class="fa-brands fa-youtube text-red-600"></i> Ver en YouTube
-                            </a>
-                            <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20vi%20su%20video%20cl%C3%ADnico%20%22Masaje%20Deportivo%20y%20Recuperaci%C3%B3n%20Funcional%20de%20Alta%20Competencia%22%20y%20deseo%20agendar%20una%20evaluaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="bg-[#f0fdfa] hover:bg-teal-100 text-[#0d9488] border border-teal-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition">
-                                <i class="fa-brands fa-whatsapp"></i> Agendar Cita
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            
-                <article class="bg-white rounded-3xl overflow-hidden border-2 border-sky-100 shadow-sm hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col">
-                    <div class="video-short-container border-b border-sky-100">
-                        <iframe loading="lazy" src="https://www.youtube.com/embed/TTYjR0GJZ7g?rel=0" title="Terapia Física Instrumental y Agentes Físicos en Rehabilitación - Jesús Enmanuel Terrones Ninahuaman" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
-                        </iframe>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                        <div>
-                            <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-[#0d9488] bg-[#f0fdfa] border border-teal-200 px-3 py-0.5 rounded-full mb-2">
-                                Terapia Instrumental
-                            </span>
-                            <h3 class="font-heading font-bold text-base text-slate-900 leading-snug mb-1.5">
-                                Terapia Física Instrumental y Agentes Físicos en Rehabilitación
-                            </h3>
-                            <p class="text-xs text-slate-600 leading-relaxed mb-4">
-                                Aplicación clínica de aparatología fisioterapéutica para acelerar la analgesia y regeneración tisular.
-                            </p>
-                        </div>
-                        <div class="pt-3 border-t border-sky-100 flex items-center justify-between text-xs">
-                            <a href="https://www.youtube.com/shorts/TTYjR0GJZ7g" target="_blank" rel="noopener noreferrer" class="text-[#0369a1] hover:underline font-bold flex items-center gap-1">
-                                <i class="fa-brands fa-youtube text-red-600"></i> Ver en YouTube
-                            </a>
-                            <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20vi%20su%20video%20cl%C3%ADnico%20%22Terapia%20F%C3%ADsica%20Instrumental%20y%20Agentes%20F%C3%ADsicos%20en%20Rehabilitaci%C3%B3n%22%20y%20deseo%20agendar%20una%20evaluaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="bg-[#f0fdfa] hover:bg-teal-100 text-[#0d9488] border border-teal-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition">
-                                <i class="fa-brands fa-whatsapp"></i> Agendar Cita
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            
-                <article class="bg-white rounded-3xl overflow-hidden border-2 border-sky-100 shadow-sm hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col">
-                    <div class="video-short-container border-b border-sky-100">
-                        <iframe loading="lazy" src="https://www.youtube.com/embed/FW7Er3NZAzY?rel=0" title="Fisioterapia Podal y Liberación Miofascial para Fascitis Plantar - Jesús Enmanuel Terrones Ninahuaman" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
-                        </iframe>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                        <div>
-                            <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-[#0d9488] bg-[#f0fdfa] border border-teal-200 px-3 py-0.5 rounded-full mb-2">
-                                Fisioterapia Podal
-                            </span>
-                            <h3 class="font-heading font-bold text-base text-slate-900 leading-snug mb-1.5">
-                                Fisioterapia Podal y Liberación Miofascial para Fascitis Plantar
-                            </h3>
-                            <p class="text-xs text-slate-600 leading-relaxed mb-4">
-                                Tratamiento clínico de la fascia plantar y biomecánica del pie para recuperar una pisada sin dolor.
-                            </p>
-                        </div>
-                        <div class="pt-3 border-t border-sky-100 flex items-center justify-between text-xs">
-                            <a href="https://www.youtube.com/shorts/FW7Er3NZAzY" target="_blank" rel="noopener noreferrer" class="text-[#0369a1] hover:underline font-bold flex items-center gap-1">
-                                <i class="fa-brands fa-youtube text-red-600"></i> Ver en YouTube
-                            </a>
-                            <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20vi%20su%20video%20cl%C3%ADnico%20%22Fisioterapia%20Podal%20y%20Liberaci%C3%B3n%20Miofascial%20para%20Fascitis%20Plantar%22%20y%20deseo%20agendar%20una%20evaluaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="bg-[#f0fdfa] hover:bg-teal-100 text-[#0d9488] border border-teal-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition">
-                                <i class="fa-brands fa-whatsapp"></i> Agendar Cita
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            </div>
-
-                <!-- Herramienta para previsualizar o agregar nuevos Shorts del canal -->
-                <div class="mt-12 bg-gradient-to-r from-[#f0f9ff] to-[#f0fdfa] border border-sky-200 rounded-3xl p-6 sm:p-7 shadow-sm">
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                        <div>
-                            <span class="text-[11px] font-bold uppercase tracking-wider text-[#0d9488] bg-white px-2.5 py-1 rounded-full border border-teal-200">
-                                Actualizador de Videos Clínicos
-                            </span>
-                            <h3 class="font-heading font-bold text-lg text-slate-900 mt-2 flex items-center gap-2">
-                                <i class="fa-solid fa-circle-plus text-[#0369a1]"></i>
-                                Previsualizar un nuevo Video o Short de @jesusterronesninahuaman
-                            </h3>
-                            <p class="text-sm text-slate-600 mt-0.5">
-                                Pega el enlace de cualquier nuevo caso clínico subido a tu canal de YouTube para integrarlo en esta galería médica.
-                            </p>
-                        </div>
-                        <div class="flex flex-col sm:flex-row gap-2.5 w-full lg:w-auto">
-                            <input type="text" id="new-yt-title" placeholder="Nombre del caso (ej. Ajuste Cervical)" class="px-4 py-3 rounded-xl border border-sky-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0369a1]">
-                            <input type="url" id="new-yt-url" placeholder="https://www.youtube.com/shorts/..." class="px-4 py-3 rounded-xl border border-sky-200 bg-white text-sm sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#0369a1]">
-                            <button onclick="addCustomYoutubeVideo()" class="bg-[#0369a1] hover:bg-[#075985] text-white font-semibold px-5 py-3 rounded-xl text-sm transition cursor-pointer whitespace-nowrap shadow-sm">
-                                <i class="fa-solid fa-plus mr-1"></i> Previsualizar Video
-                            </button>
-                        </div>
-                    </div>
-                    <p id="yt-add-feedback" class="text-xs font-semibold mt-2.5 hidden"></p>
                 </div>
 
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- SECCIÓN 3: ESPECIALIDADES CLÍNICAS Y TRATAMIENTOS -->
-        <section id="especialidades" class="py-16 lg:py-24 bg-gradient-to-b from-[#f0f9ff] to-[#f0fdfa] border-b border-teal-100">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center max-w-3xl mx-auto mb-14">
-                    <span class="text-[#0d9488] font-bold text-xs uppercase tracking-widest bg-white border border-teal-200 px-4 py-1.5 rounded-full shadow-sm">
-                        Protocolos Terapéuticos Basados en Evidencia
+    <!-- GALERÍA DE VIDEOS DE YOUTUBE -->
+    <section id="videos-youtube" class="py-16 lg:py-20 bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                <div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-extrabold uppercase tracking-wider border border-red-200">
+                        <i class="fa-brands fa-youtube"></i> Canal Oficial de YouTube
                     </span>
-                    <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-slate-900 mt-3.5">
-                        Especialidades Clínicas y Tratamientos
+                    <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-2">
+                        Videos Reales de Masoterapia y Quiropraxia
                     </h2>
-                    <p class="text-slate-600 mt-3">
-                        Abordaje integral del dolor agudo y crónico dirigido por <strong>Jesús Enmanuel Terrones Ninahuaman</strong>, combinando terapia manual ortopédica, fisioterapia y quiropraxia.
+                    <p class="text-slate-600 mt-1 text-sm sm:text-base">
+                        Conoce mi trabajo práctico en <strong class="text-slate-800">Jesús Enmanuel Terrones Ninahuaman (@jesusterronesninahuaman)</strong>.
+                    </p>
+                </div>
+                <a href="https://www.youtube.com/@jesusterronesninahuaman?sub_confirmation=1" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-sm transition shrink-0">
+                    <i class="fa-brands fa-youtube text-lg"></i>
+                    Ver Todos Mis Videos y Suscribirse
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Video 1 -->
+                <article class="bg-slate-50 rounded-2xl p-4 border border-sky-100 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="rounded-xl overflow-hidden bg-slate-900 aspect-9-16 mb-3.5">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/smqgteGqXPQ" title="Alivio de Tensión Ciática y Zona Lumbar - Jesús Terrones Ninahuaman" loading="lazy" allowfullscreen></iframe>
+                    </div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#0369a1]">Quiropraxia &amp; Masoterapia</span>
+                    <h3 class="font-bold text-slate-900 text-base mt-0.5">Alivio de Tensión en Ciática y Zona Lumbar</h3>
+                    <p class="text-xs text-slate-600 mt-1">Maniobras de descompresión y masaje profundo para soltar la sobrecarga en espalda baja y pierna.</p>
+                </article>
+
+                <!-- Video 2 -->
+                <article class="bg-slate-50 rounded-2xl p-4 border border-sky-100 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="rounded-xl overflow-hidden bg-slate-900 aspect-9-16 mb-3.5">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/6Qj_tnIFSYo" title="Masaje para Tensión Mandibular y Facial - Jesús Terrones Ninahuaman" loading="lazy" allowfullscreen></iframe>
+                    </div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#0d9488]">Relajación Muscular</span>
+                    <h3 class="font-bold text-slate-900 text-base mt-0.5">Liberación de Tensión Facial, Cuello y Mandíbula</h3>
+                    <p class="text-xs text-slate-600 mt-1">Masoterapia focalizada para personas con rigidez por estrés y sobrecarga en mandíbula y cervicales.</p>
+                </article>
+
+                <!-- Video 3 -->
+                <article class="bg-slate-50 rounded-2xl p-4 border border-sky-100 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="rounded-xl overflow-hidden bg-slate-900 aspect-9-16 mb-3.5">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/omq8mwa2Rk8" title="Masaje Descontracturante de Espalda Alta - Jesús Terrones Ninahuaman" loading="lazy" allowfullscreen></iframe>
+                    </div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#0369a1]">Espalda y Omóplatos</span>
+                    <h3 class="font-bold text-slate-900 text-base mt-0.5">Descontracturante de Espalda Alta y Hombros</h3>
+                    <p class="text-xs text-slate-600 mt-1">Trabajo manual sobre nudos musculares en trapecios, cuello y zona dorsal para recuperar ligereza.</p>
+                </article>
+
+                <!-- Video 4 -->
+                <article class="bg-slate-50 rounded-2xl p-4 border border-sky-100 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="rounded-xl overflow-hidden bg-slate-900 aspect-9-16 mb-3.5">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/pkeRFh6nV1s" title="Descarga Muscular Deportiva - Jesús Terrones Ninahuaman" loading="lazy" allowfullscreen></iframe>
+                    </div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#0d9488]">Descarga Muscular</span>
+                    <h3 class="font-bold text-slate-900 text-base mt-0.5">Masaje de Descarga y Recuperación Física</h3>
+                    <p class="text-xs text-slate-600 mt-1">Ideal para personas activas o deportistas que buscan aliviar piernas y espalda cansadas tras el esfuerzo.</p>
+                </article>
+
+                <!-- Video 5 -->
+                <article class="bg-slate-50 rounded-2xl p-4 border border-sky-100 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="rounded-xl overflow-hidden bg-slate-900 aspect-9-16 mb-3.5">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/TTYjR0GJZ7g" title="Percusión Muscular y Masoterapia - Jesús Terrones Ninahuaman" loading="lazy" allowfullscreen></iframe>
+                    </div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#0369a1]">Técnica Combinada</span>
+                    <h3 class="font-bold text-slate-900 text-base mt-0.5">Masoterapia con Apoyo de Percusión Muscular</h3>
+                    <p class="text-xs text-slate-600 mt-1">Estímulo muscular profundo para relajar fibras tensas antes del ajuste manual y estiramiento.</p>
+                </article>
+
+                <!-- Video 6 -->
+                <article class="bg-slate-50 rounded-2xl p-4 border border-sky-100 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="rounded-xl overflow-hidden bg-slate-900 aspect-9-16 mb-3.5">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/FW7Er3NZAzY" title="Masoterapia de Pies y Piernas Cansadas - Jesús Terrones Ninahuaman" loading="lazy" allowfullscreen></iframe>
+                    </div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#0d9488]">Bienestar en Pies</span>
+                    <h3 class="font-bold text-slate-900 text-base mt-0.5">Liberación de Fascia Plantar y Pies Cansados</h3>
+                    <p class="text-xs text-slate-600 mt-1">Masaje profundo en planta del pie, talón y pantorrilla para aliviar la fatiga al caminar o estar de pie.</p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICIOS DE MASOTERAPIA Y QUIROPRAXIA -->
+    <section id="servicios" class="py-16 lg:py-20 bg-[#f0f9ff] border-b border-sky-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-[#0369a1] bg-white px-3.5 py-1.5 rounded-full border border-sky-200">
+                    Especialidades en Bienestar Físico
+                </span>
+                <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-3">
+                    Servicios de Masoterapia y Quiropraxia
+                </h2>
+                <p class="text-slate-600 mt-2 text-sm sm:text-base">
+                    Técnicas manuales orientadas al alivio de tensiones musculares, descanso corporal y mejora de la movilidad postural.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <div class="bg-white rounded-2xl p-6 border border-sky-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-sky-50 text-[#0369a1] flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-hands"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-900 text-lg">Masaje Descontracturante</h3>
+                        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                            Trabajo manual profundo sobre cuello, hombros, espalda alta y zona lumbar para deshacer nudos y tensión acumulada por estrés o malas posturas.
+                        </p>
+                    </div>
+                    <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20deseo%20reservar%20un%20Masaje%20Descontracturante." target="_blank" rel="noopener" class="mt-6 inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-sky-50 hover:bg-[#0369a1] text-[#0369a1] hover:text-white font-bold text-xs transition">
+                        <i class="fa-brands fa-whatsapp"></i> Consultar por WhatsApp
+                    </a>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-sky-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-teal-50 text-[#0d9488] flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-person-walking"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-900 text-lg">Charnela Quiropraxia</h3>
+                        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                            Maniobras quiroprácticas manuales de alineación y liberación articular para disminuir la rigidez de espalda, cuello y cadera, recuperando la soltura corporal.
+                        </p>
+                    </div>
+                    <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20deseo%20reservar%20una%20sesi%C3%B3n%20de%20Quiropraxia." target="_blank" rel="noopener" class="mt-6 inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-teal-50 hover:bg-[#0d9488] text-[#0d9488] hover:text-white font-bold text-xs transition">
+                        <i class="fa-brands fa-whatsapp"></i> Consultar por WhatsApp
+                    </a>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-sky-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-sky-50 text-[#0369a1] flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-dumbbell"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-900 text-lg">Descarga Muscular</h3>
+                        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                            Sesión enfocada en piernas, pantorrillas, espalda y brazos para personas que entrenan o realizan trabajo físico intenso y necesitan soltar la sobrecarga.
+                        </p>
+                    </div>
+                    <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20deseo%20reservar%20una%20Descarga%20Muscular." target="_blank" rel="noopener" class="mt-6 inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-sky-50 hover:bg-[#0369a1] text-[#0369a1] hover:text-white font-bold text-xs transition">
+                        <i class="fa-brands fa-whatsapp"></i> Consultar por WhatsApp
+                    </a>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-sky-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-teal-50 text-[#0d9488] flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-spa"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-900 text-lg">Masaje Relajante y Anti-Estrés</h3>
+                        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                            Masoterapia integral para calmar la fatiga física y mental, liberar tensión en cuello, rostro y pies, y mejorar tu descanso nocturno.
+                        </p>
+                    </div>
+                    <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20deseo%20reservar%20un%20Masaje%20Relajante." target="_blank" rel="noopener" class="mt-6 inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-teal-50 hover:bg-[#0d9488] text-[#0d9488] hover:text-white font-bold text-xs transition">
+                        <i class="fa-brands fa-whatsapp"></i> Consultar por WhatsApp
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SOBRE MÍ Y TRANSPARENCIA PROFESIONAL -->
+    <section id="sobre-mi" class="py-16 bg-white border-b border-slate-200">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-gradient-to-br from-[#f0f9ff] via-white to-[#f0fdfa] rounded-3xl p-6 sm:p-10 border border-sky-200 shadow-sm">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-[#0d9488]">Formación y Enfoque Práctico</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
+                    Sobre Jesús Enmanuel Terrones Ninahuaman
+                </h2>
+                <p class="text-slate-700 mt-4 leading-relaxed text-sm sm:text-base">
+                    Me dedico con vocación a la <strong>Masoterapia y la Quiropraxia</strong>, ayudando a las personas a liberar contracturas musculares, aliviar la pesadez de espalda, cuello y piernas, y recuperar su bienestar corporal mediante técnicas manuales seguras y personalizadas.
+                </p>
+                <div class="mt-6 p-4 rounded-2xl bg-sky-50/80 border border-sky-200 text-xs text-slate-700 leading-relaxed">
+                    <strong class="text-[#0369a1] block mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Nota de Transparencia Profesional:</strong>
+                    Mis servicios corresponden exclusivamente a mi formación en <strong>Masoterapia y Quiropraxia</strong> orientadas al bienestar físico, relajación muscular y cuidado postural. No reemplazan consultas, diagnósticos ni tratamientos médicos o de fisioterapia clínica.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FORMULARIO INTERACTIVO A WHATSAPP -->
+    <section id="contacto" class="py-16 lg:py-20 bg-[#f0fdfa]">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-3xl p-6 sm:p-10 border border-teal-200 shadow-lg">
+                <div class="text-center mb-8">
+                    <span class="inline-block px-3.5 py-1 rounded-full bg-teal-50 text-[#0d9488] text-xs font-extrabold uppercase tracking-wider border border-teal-200">
+                        Atención Directa por WhatsApp
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">
+                        Agenda tu Sesión con Jesús Enmanuel
+                    </h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        Completa tus datos y envía tu consulta directo a mi WhatsApp <strong>+51 939 612 446</strong>.
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-                    <!-- Especialidad 1 -->
-                    <article class="bg-white rounded-3xl p-7 shadow-sm border border-sky-100 hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col justify-between">
-                        <div>
-                            <div class="w-14 h-14 rounded-2xl bg-[#f0f9ff] text-[#0369a1] border border-sky-200 flex items-center justify-center text-2xl mb-5">
-                                <i class="fa-solid fa-hands-holding-circle"></i>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase text-[#0d9488] tracking-wider">Tejido Profundo</span>
-                            <h3 class="font-heading font-bold text-xl text-slate-900 mt-1 mb-2.5">
-                                Masoterapia Descontracturante Clínica
-                            </h3>
-                            <p class="text-slate-600 text-sm leading-relaxed mb-5">
-                                Desactivación manual de puntos gatillo miofasciales y contracturas severas en región cervical, trapecios, romboides y zona dorsolumbar causadas por estrés o ergonomía laboral.
-                            </p>
-                        </div>
-                        <a href="#evaluacion-cita" onclick="selectClinicalCondition('Cervicalgia / Contractura de Espalda Alta')" class="text-[#0369a1] font-bold text-sm hover:text-[#0d9488] inline-flex items-center gap-2 pt-3 border-t border-slate-100">
-                            Seleccionar en evaluación clínica <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
-                    </article>
-
-                    <!-- Especialidad 2 -->
-                    <article class="bg-white rounded-3xl p-7 shadow-sm border border-sky-100 hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col justify-between">
-                        <div>
-                            <div class="w-14 h-14 rounded-2xl bg-[#f0fdfa] text-[#0d9488] border border-teal-200 flex items-center justify-center text-2xl mb-5">
-                                <i class="fa-solid fa-bone"></i>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase text-[#0d9488] tracking-wider">Columna y Neurodinamia</span>
-                            <h3 class="font-heading font-bold text-xl text-slate-900 mt-1 mb-2.5">
-                                Tratamiento de Nervio Ciático y Columna
-                            </h3>
-                            <p class="text-slate-600 text-sm leading-relaxed mb-5">
-                                Liberación clínica de atrapamientos del nervio ciático, síndrome del piramidal, lumbalgia mecánica y maniobras de <strong>Charnela Quiropraxia</strong> para restaurar el eje vertebral.
-                            </p>
-                        </div>
-                        <a href="#evaluacion-cita" onclick="selectClinicalCondition('Dolor de Nervio Ciático / Lumbalgia')" class="text-[#0369a1] font-bold text-sm hover:text-[#0d9488] inline-flex items-center gap-2 pt-3 border-t border-slate-100">
-                            Seleccionar en evaluación clínica <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
-                    </article>
-
-                    <!-- Especialidad 3 -->
-                    <article class="bg-white rounded-3xl p-7 shadow-sm border border-sky-100 hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col justify-between">
-                        <div>
-                            <div class="w-14 h-14 rounded-2xl bg-[#f0f9ff] text-[#0369a1] border border-sky-200 flex items-center justify-center text-2xl mb-5">
-                                <i class="fa-solid fa-head-side-Medical"></i>
-                                <i class="fa-solid fa-face-smile-beam"></i>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase text-[#0d9488] tracking-wider">Terapia Craneomandibular</span>
-                            <h3 class="font-heading font-bold text-xl text-slate-900 mt-1 mb-2.5">
-                                Bruxismo y Liberación Miofascial de ATM
-                            </h3>
-                            <p class="text-slate-600 text-sm leading-relaxed mb-5">
-                                Tratamiento clínico especializado para la sobrecarga de la articulación temporomandibular (ATM), músculos maseteros, pterigoideos, dolor mandibular y cefaleas tensionales.
-                            </p>
-                        </div>
-                        <a href="#evaluacion-cita" onclick="selectClinicalCondition('Bruxismo / Dolor de Mandíbula (ATM)')" class="text-[#0369a1] font-bold text-sm hover:text-[#0d9488] inline-flex items-center gap-2 pt-3 border-t border-slate-100">
-                            Seleccionar en evaluación clínica <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
-                    </article>
-
-                    <!-- Especialidad 4 -->
-                    <article class="bg-white rounded-3xl p-7 shadow-sm border border-sky-100 hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col justify-between">
-                        <div>
-                            <div class="w-14 h-14 rounded-2xl bg-[#f0fdfa] text-[#0d9488] border border-teal-200 flex items-center justify-center text-2xl mb-5">
-                                <i class="fa-solid fa-person-running"></i>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase text-[#0d9488] tracking-wider">Alto Rendimiento</span>
-                            <h3 class="font-heading font-bold text-xl text-slate-900 mt-1 mb-2.5">
-                                Descarga Muscular Deportiva
-                            </h3>
-                            <p class="text-slate-600 text-sm leading-relaxed mb-5">
-                                Recuperación muscular acelerada para deportistas, corredores y atletas. Optimización de la elasticidad miofascial, prevención de desgarros y readaptación funcional.
-                            </p>
-                        </div>
-                        <a href="#evaluacion-cita" onclick="selectClinicalCondition('Lesión o Descarga Muscular Deportiva')" class="text-[#0369a1] font-bold text-sm hover:text-[#0d9488] inline-flex items-center gap-2 pt-3 border-t border-slate-100">
-                            Seleccionar en evaluación clínica <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
-                    </article>
-
-                    <!-- Especialidad 5 -->
-                    <article class="bg-white rounded-3xl p-7 shadow-sm border border-sky-100 hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col justify-between">
-                        <div>
-                            <div class="w-14 h-14 rounded-2xl bg-[#f0f9ff] text-[#0369a1] border border-sky-200 flex items-center justify-center text-2xl mb-5">
-                                <i class="fa-solid fa-wave-square"></i>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase text-[#0d9488] tracking-wider">Agentes Físicos y Quiropraxia</span>
-                            <h3 class="font-heading font-bold text-xl text-slate-900 mt-1 mb-2.5">
-                                Terapia Física Instrumental y Quiropraxia
-                            </h3>
-                            <p class="text-slate-600 text-sm leading-relaxed mb-5">
-                                Uso clínico de aparatología fisioterapéutica (electroanalgesia, ultrasonido, liberación instrumental miofascial) combinada con ajustes quiroprácticos precisos.
-                            </p>
-                        </div>
-                        <a href="#evaluacion-cita" onclick="selectClinicalCondition('Terapia Instrumental y Charnela Quiropraxia')" class="text-[#0369a1] font-bold text-sm hover:text-[#0d9488] inline-flex items-center gap-2 pt-3 border-t border-slate-100">
-                            Seleccionar en evaluación clínica <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
-                    </article>
-
-                    <!-- Especialidad 6 -->
-                    <article class="bg-white rounded-3xl p-7 shadow-sm border border-sky-100 hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col justify-between">
-                        <div>
-                            <div class="w-14 h-14 rounded-2xl bg-[#f0fdfa] text-[#0d9488] border border-teal-200 flex items-center justify-center text-2xl mb-5">
-                                <i class="fa-solid fa-shoe-prints"></i>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase text-[#0d9488] tracking-wider">Biomecánica del Pie</span>
-                            <h3 class="font-heading font-bold text-xl text-slate-900 mt-1 mb-2.5">
-                                Fisioterapia Podal y Fascitis Plantar
-                            </h3>
-                            <p class="text-slate-600 text-sm leading-relaxed mb-5">
-                                Terapia manual específica para fascitis plantar, espolón calcáneo, fatiga crónica de planta del pie, acortamiento de gemelos y rehabilitación de tobillo.
-                            </p>
-                        </div>
-                        <a href="#evaluacion-cita" onclick="selectClinicalCondition('Fisioterapia Podal / Fascitis Plantar')" class="text-[#0369a1] font-bold text-sm hover:text-[#0d9488] inline-flex items-center gap-2 pt-3 border-t border-slate-100">
-                            Seleccionar en evaluación clínica <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN 4: PERFIL DEL ESPECIALISTA (SEO NOMINAL PARA GOOGLE) -->
-        <section id="sobre-mi" class="py-16 lg:py-24 bg-white border-b border-sky-100">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                    
-                    <div class="lg:col-span-7 space-y-5">
-                        <span class="text-[#0369a1] font-bold text-xs uppercase tracking-widest bg-[#f0f9ff] border border-sky-200 px-3.5 py-1.5 rounded-full">
-                            Dirección Clínica y Terapéutica
-                        </span>
-                        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-slate-900">
-                            Jesús Enmanuel Terrones Ninahuaman
-                        </h2>
-                        <p class="text-slate-600 leading-relaxed text-base">
-                            Especialista en <strong>Masoterapia Clínica, Fisioterapia, Rehabilitación Física y Charnela Quiropraxia</strong> en Perú. Mi enfoque terapéutico integra la evaluación anatómica rigurosa con técnicas manuales avanzadas para resolver el origen mecánico del dolor y devolver al paciente su movilidad funcional sin fármacos innecesarios.
-                        </p>
-                        <p class="text-slate-600 leading-relaxed text-base">
-                            En mi canal oficial de divulgación clínica en YouTube (<a href="https://www.youtube.com/@jesusterronesninahuaman" target="_blank" rel="noopener noreferrer" class="text-[#0369a1] font-bold underline">@jesusterronesninahuaman</a>) comparto casos reales de descompresión del nervio ciático, liberación miofascial facial para bruxismo, descarga deportiva y rehabilitación física.
-                        </p>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                            <div class="flex items-start gap-3.5 bg-[#f0f9ff] p-4 rounded-2xl border border-sky-100">
-                                <i class="fa-solid fa-clipboard-check text-[#0369a1] text-xl mt-0.5"></i>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 text-sm">Evaluación Clínica Previa</h3>
-                                    <p class="text-xs text-slate-600 mt-0.5">Valoración articular, postural y muscular antes de cada sesión.</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3.5 bg-[#f0fdfa] p-4 rounded-2xl border border-teal-100">
-                                <i class="fa-solid fa-hands-bubbles text-[#0d9488] text-xl mt-0.5"></i>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 text-sm">Ambiente Clínico Seguro</h3>
-                                    <p class="text-xs text-slate-600 mt-0.5">Estándares de higiene clínica, confort terapéutico y trato humano.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Ficha Profesional Clínica Luminosa -->
-                    <div class="lg:col-span-5">
-                        <div class="bg-gradient-to-br from-[#f0f9ff] via-white to-[#f0fdfa] rounded-3xl p-7 sm:p-8 border-2 border-sky-200 shadow-lg">
-                            <div class="flex items-center gap-4 pb-5 mb-5 border-b border-sky-100">
-                                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0369a1] to-[#0d9488] text-white font-heading font-extrabold text-xl flex items-center justify-center shadow-md shrink-0">
-                                    JETN
-                                </div>
-                                <div>
-                                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#0d9488] block">Ficha del Especialista</span>
-                                    <h3 class="font-heading font-extrabold text-lg text-slate-900 leading-snug">Jesús Enmanuel Terrones Ninahuaman</h3>
-                                    <p class="text-xs font-semibold text-[#0369a1]">Masoterapia Clínica &amp; Rehabilitación</p>
-                                </div>
-                            </div>
-
-                            <ul class="space-y-3 text-sm text-slate-700 mb-6">
-                                <li class="flex items-center gap-3">
-                                    <i class="fa-solid fa-circle-check text-[#0d9488]"></i>
-                                    <span>Masoterapia Descontracturante y Liberación Miofascial</span>
-                                </li>
-                                <li class="flex items-center gap-3">
-                                    <i class="fa-solid fa-circle-check text-[#0d9488]"></i>
-                                    <span>Charnela Quiropraxia y Terapia de Columna</span>
-                                </li>
-                                <li class="flex items-center gap-3">
-                                    <i class="fa-solid fa-circle-check text-[#0d9488]"></i>
-                                    <span>Fisioterapia Deportiva e Instrumental</span>
-                                </li>
-                                <li class="flex items-center gap-3">
-                                    <i class="fa-solid fa-circle-check text-[#0d9488]"></i>
-                                    <span>Atención directa previa cita en Perú</span>
-                                </li>
-                            </ul>
-
-                            <div class="bg-white rounded-2xl p-4 border border-teal-200 flex items-center justify-between gap-3 shadow-sm">
-                                <div>
-                                    <span class="text-[11px] font-bold uppercase text-slate-400 block">WhatsApp Clínico Oficial</span>
-                                    <span class="font-heading font-extrabold text-xl text-[#0369a1]">+51 939 612 446</span>
-                                </div>
-                                <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20deseo%20separar%20una%20cita%20cl%C3%ADnica" target="_blank" rel="noopener noreferrer" class="bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-xl transition shadow-sm">
-                                    Agendar Ahora
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN 5: FORMULARIO CLÍNICO INTERACTIVO DE EVALUACIÓN RÁPIDA Y RESERVA POR WHATSAPP -->
-        <section id="evaluacion-cita" class="py-16 lg:py-24 clinical-hero-bg border-b border-sky-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                    
-                    <!-- Columna Explicativa -->
-                    <div class="lg:col-span-5 space-y-6">
-                        <span class="bg-white text-[#0d9488] border border-teal-200 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm inline-block">
-                            Triaje Clínico Digital
-                        </span>
-                        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-slate-900">
-                            Evaluación Rápida de Dolor y Reserva de Cita
-                        </h2>
-                        <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
-                            Indícanos tu dolencia principal y el <strong>nivel de dolor en la escala clínica EVA (del 1 al 10)</strong>. Tu ficha se enviará lista al WhatsApp de <strong>Jesús Enmanuel Terrones Ninahuaman (+51 939 612 446)</strong> para priorizar tu atención.
-                        </p>
-
-                        <!-- Tarjetas de Contacto Clínico -->
-                        <div class="space-y-3.5 pt-2">
-                            <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20deseo%20agendar%20una%20cita%20cl%C3%ADnica" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-white hover:bg-[#f0fdfa] p-4 rounded-2xl border border-teal-200 shadow-sm transition">
-                                <div class="w-12 h-12 rounded-xl bg-[#f0fdfa] text-[#0d9488] border border-teal-200 flex items-center justify-center text-2xl">
-                                    <i class="fa-brands fa-whatsapp"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-semibold text-slate-500">Central de Citas y Consultas</p>
-                                    <p class="font-heading font-extrabold text-lg text-slate-900">+51 939 612 446</p>
-                                </div>
-                            </a>
-
-                            <a href="https://www.youtube.com/@jesusterronesninahuaman" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-white hover:bg-[#f0f9ff] p-4 rounded-2xl border border-sky-200 shadow-sm transition">
-                                <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 border border-red-100 flex items-center justify-center text-2xl">
-                                    <i class="fa-brands fa-youtube"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-semibold text-slate-500">Canal Oficial de Casos Clínicos</p>
-                                    <p class="font-heading font-bold text-base text-[#0369a1]">youtube.com/@jesusterronesninahuaman</p>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Formulario Clínico Interactivo con Escala de Dolor 1 al 10 -->
-                    <div class="lg:col-span-7">
-                        <form id="whatsapp-booking-form" onsubmit="sendBookingToWhatsApp(event)" class="bg-white text-slate-800 rounded-3xl p-6 sm:p-9 shadow-xl border-2 border-sky-100 space-y-6">
-                            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                                <div>
-                                    <span class="text-xs font-bold uppercase text-[#0d9488]">Ficha de Pre-Evaluación</span>
-                                    <h3 class="font-heading font-extrabold text-2xl text-slate-900">
-                                        Reservar Sesión Clínica
-                                    </h3>
-                                </div>
-                                <div class="w-11 h-11 rounded-2xl bg-[#f0f9ff] text-[#0369a1] flex items-center justify-center text-xl">
-                                    <i class="fa-solid fa-notes-medical"></i>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="patient-name" class="block text-xs font-bold uppercase text-slate-700 mb-1.5">Nombre del Paciente *</label>
-                                    <input type="text" id="patient-name" required="" placeholder="Ej. María Fernanda López" class="w-full px-4 py-3 rounded-xl border border-sky-200 bg-[#f0f9ff]/50 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0369a1]">
-                                </div>
-                                <div>
-                                    <label for="patient-service" class="block text-xs font-bold uppercase text-slate-700 mb-1.5">Dolencia o Tratamiento *</label>
-                                    <select id="patient-service" class="w-full px-4 py-3 rounded-xl border border-sky-200 bg-[#f0f9ff]/50 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0369a1]">
-                                        <option value="Dolor de Nervio Ciático / Lumbalgia">Dolor de Nervio Ciático / Lumbalgia</option>
-                                        <option value="Cervicalgia / Contractura de Espalda Alta">Cervicalgia / Contractura de Espalda Alta</option>
-                                        <option value="Bruxismo / Dolor de Mandíbula (ATM)">Bruxismo / Dolor de Mandíbula (ATM)</option>
-                                        <option value="Lesión o Descarga Muscular Deportiva">Lesión o Descarga Muscular Deportiva</option>
-                                        <option value="Terapia Instrumental y Charnela Quiropraxia">Terapia Instrumental y Charnela Quiropraxia</option>
-                                        <option value="Fisioterapia Podal / Fascitis Plantar">Fisioterapia Podal / Fascitis Plantar</option>
-                                        <option value="Evaluación Fisioterapéutica Integral">Evaluación Fisioterapéutica Integral</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Escala Clínica de Dolor del 1 al 10 -->
-                            <div class="bg-[#f0f9ff] p-5 rounded-2xl border border-sky-200 space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <label for="patient-pain" class="text-xs font-bold uppercase text-[#0369a1] flex items-center gap-1.5">
-                                        <i class="fa-solid fa-gauge-high"></i> Nivel de Dolor Actual (Escala 1 al 10):
-                                    </label>
-                                    <span id="pain-badge" class="bg-amber-500 text-white font-heading font-extrabold text-xs px-3 py-1 rounded-full shadow-sm">
-                                        Nivel 6 / 10 (Dolor Moderado-Alto)
-                                    </span>
-                                </div>
-                                <input type="range" id="patient-pain" min="1" max="10" value="6" oninput="updatePainScale(this.value)" class="pain-slider">
-                                <div class="flex justify-between text-[11px] font-semibold text-slate-500">
-                                    <span>1-3: Molestia Leve</span>
-                                    <span>4-6: Dolor Moderado</span>
-                                    <span>7-10: Dolor Intenso / Agudo</span>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="patient-zone" class="block text-xs font-bold uppercase text-slate-700 mb-1.5">Tiempo de Evolución / Zona Exacta</label>
-                                    <input type="text" id="patient-zone" placeholder="Ej. Hace 2 semanas en pierna derecha..." class="w-full px-4 py-3 rounded-xl border border-sky-200 bg-[#f0f9ff]/50 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0369a1]">
-                                </div>
-                                <div>
-                                    <label for="patient-schedule" class="block text-xs font-bold uppercase text-slate-700 mb-1.5">Disponibilidad Horaria</label>
-                                    <select id="patient-schedule" class="w-full px-4 py-3 rounded-xl border border-sky-200 bg-[#f0f9ff]/50 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0369a1]">
-                                        <option value="Turno Mañana">Turno Mañana</option>
-                                        <option value="Turno Tarde">Turno Tarde</option>
-                                        <option value="Turno Noche">Turno Noche</option>
-                                        <option value="Sábado / Fin de Semana">Sábado / Fin de Semana</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="w-full bg-[#0d9488] hover:bg-[#0f766e] text-white font-heading font-bold text-base py-4 rounded-2xl shadow-lg shadow-teal-600/20 transition flex items-center justify-center gap-2.5 cursor-pointer">
-                                <i class="fa-brands fa-whatsapp text-2xl"></i>
-                                <span>Enviar Evaluación y Agendar al +51 939 612 446</span>
-                            </button>
-                        </form>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN 6: GUÍA PASO A PASO VISIBLE PARA APARECER EN GOOGLE CON GITHUB PAGES -->
-        <section id="guia-google" class="py-16 lg:py-20 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="bg-gradient-to-br from-[#f0f9ff] via-white to-[#f0fdfa] border-2 border-sky-200 rounded-3xl p-6 sm:p-10 shadow-sm">
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-8 border-b border-sky-100">
-                        <div>
-                            <span class="bg-[#0369a1] text-white text-xs font-bold uppercase tracking-wider px-3.5 py-1 rounded-full">
-                                Guía Oficial de Indexación en Google
-                            </span>
-                            <h2 class="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 mt-3">
-                                Paso a Paso para que tu Web aparezca en Google gratis con GitHub
-                            </h2>
-                            <p class="text-slate-600 text-sm sm:text-base mt-1">
-                                Sigue estos 4 pasos exactos y descarga tus archivos listos aquí mismo para posicionar <strong>"Jesús Enmanuel Terrones Ninahuaman"</strong> en Google.
-                            </p>
-                        </div>
-                        <div class="flex flex-wrap gap-3 shrink-0">
-                            <button onclick="downloadFile('index.html', getFullHtmlString(), 'text/html')" class="bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-xl shadow-sm transition cursor-pointer flex items-center gap-2">
-                                <i class="fa-solid fa-download"></i> Descargar index.html
-                            </button>
-                            <button onclick="openSeoModal()" class="bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-xl shadow-sm transition cursor-pointer flex items-center gap-2">
-                                <i class="fa-solid fa-sitemap"></i> Generar sitemap.xml y robots.txt
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-8">
-                        <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-sm">
-                            <div class="w-9 h-9 rounded-xl bg-[#0369a1] text-white font-heading font-bold flex items-center justify-center mb-3">1</div>
-                            <h3 class="font-heading font-bold text-slate-900 text-base mb-1.5">Crea tu Repositorio en GitHub</h3>
-                            <p class="text-xs text-slate-600 leading-relaxed">
-                                Entra a <strong>github.com</strong>, crea una cuenta gratuita y pulsa <em>"New repository"</em>. Ponle de nombre <code class="bg-sky-50 text-[#0369a1] px-1 py-0.5 rounded font-bold">jesusterronesninahuaman.github.io</code> (en Público).
-                            </p>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-sm">
-                            <div class="w-9 h-9 rounded-xl bg-[#0369a1] text-white font-heading font-bold flex items-center justify-center mb-3">2</div>
-                            <h3 class="font-heading font-bold text-slate-900 text-base mb-1.5">Sube los 3 Archivos SEO</h3>
-                            <p class="text-xs text-slate-600 leading-relaxed">
-                                Usa el botón de arriba para descargar <code class="bg-sky-50 text-[#0369a1] px-1 rounded font-bold">index.html</code>, <code class="bg-sky-50 text-[#0369a1] px-1 rounded font-bold">sitemap.xml</code> y <code class="bg-sky-50 text-[#0369a1] px-1 rounded font-bold">robots.txt</code> y súbelos a tu repositorio con <em>"Add file → Upload files"</em>.
-                            </p>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-sm">
-                            <div class="w-9 h-9 rounded-xl bg-[#0d9488] text-white font-heading font-bold flex items-center justify-center mb-3">3</div>
-                            <h3 class="font-heading font-bold text-slate-900 text-base mb-1.5">Activa GitHub Pages</h3>
-                            <p class="text-xs text-slate-600 leading-relaxed">
-                                Ve a <em>Settings → Pages</em> dentro de tu repositorio. En <em>Branch</em> selecciona <strong>main</strong> y guarda (Save). En 1 minuto tu web estará en vivo en internet.
-                            </p>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-sm">
-                            <div class="w-9 h-9 rounded-xl bg-[#0d9488] text-white font-heading font-bold flex items-center justify-center mb-3">4</div>
-                            <h3 class="font-heading font-bold text-slate-900 text-base mb-1.5">Regístrala en Google</h3>
-                            <p class="text-xs text-slate-600 leading-relaxed">
-                                Abre <strong>Google Search Console</strong>, pega tu URL de GitHub Pages, envía <code class="bg-teal-50 text-[#0d9488] px-1 rounded font-bold">sitemap.xml</code> y pon el enlace en la descripción de tu canal de YouTube.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- FOOTER CLÍNICO LUMINOSO Y PROFESIONAL -->
-    <footer class="bg-[#f0f9ff] text-slate-600 py-12 border-t border-sky-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-sky-200">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-[#0369a1] text-white flex items-center justify-center text-lg shadow-sm">
-                        <i class="fa-solid fa-hand-holding-medical"></i>
-                    </div>
+                <form onsubmit="enviarWhatsApp(event)" class="space-y-5">
                     <div>
-                        <h2 class="font-heading font-extrabold text-slate-900 text-lg">
-                            Jesús Enmanuel Terrones Ninahuaman
-                        </h2>
-                        <p class="text-xs sm:text-sm text-[#0369a1] font-medium">
-                            Masoterapia Clínica • Fisioterapia • Rehabilitación Física • Charnela Quiropraxia en Perú
-                        </p>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1.5">Tu Nombre</label>
+                        <input type="text" id="clienteNombre" required placeholder="Ej. Carlos Mendoza" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#0369a1] focus:outline-none text-sm">
                     </div>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                    <button onclick="openSeoModal()" class="bg-white hover:bg-sky-50 text-[#0369a1] text-xs font-bold px-4 py-2.5 rounded-xl border border-sky-200 transition cursor-pointer shadow-sm">
-                        <i class="fa-brands fa-github mr-1.5"></i> Descargar Archivos GitHub &amp; Google SEO
-                    </button>
-                    <a href="https://www.youtube.com/@jesusterronesninahuaman" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-red-50 text-red-600 text-xs font-bold px-4 py-2.5 rounded-xl border border-red-200 transition shadow-sm">
-                        <i class="fa-brands fa-youtube mr-1.5"></i> @jesusterronesninahuaman
-                    </a>
-                </div>
-            </div>
 
-            <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-                <p>© <span id="current-year">2026</span> Jesús Enmanuel Terrones Ninahuaman. Unidad de Masoterapia Clínica y Rehabilitación Física.</p>
-                <p class="font-semibold text-slate-700">Citas WhatsApp: <a href="https://wa.me/51939612446" class="text-[#0d9488] hover:underline">+51 939 612 446</a></p>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1.5">Servicio o Zona de Molestia Muscular</label>
+                        <select id="clienteServicio" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#0369a1] focus:outline-none text-sm bg-white">
+                            <option value="Masaje Descontracturante (Espalda / Cuello / Hombros)">Masaje Descontracturante (Espalda / Cuello / Hombros)</option>
+                            <option value="Sesión de Charnela Quiropraxia (Ajuste Manual)">Sesión de Charnela Quiropraxia (Ajuste Manual)</option>
+                            <option value="Alivio de Tensión Lumbar y Ciática">Alivio de Tensión Lumbar y Ciática</option>
+                            <option value="Descarga Muscular de Piernas y Pies">Descarga Muscular de Piernas y Pies</option>
+                            <option value="Masaje Relajante / Tensión Facial y Mandibular">Masaje Relajante / Tensión Facial y Mandibular</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-bold uppercase text-slate-700 mb-1.5">
+                            <span>Nivel de Tensión o Molestia Muscular (1 al 10)</span>
+                            <span id="valorTensión" class="text-[#0369a1] font-extrabold">6 / 10</span>
+                        </div>
+                        <input type="range" id="clienteTension" min="1" max="10" value="6" oninput="document.getElementById('valorTensión').innerText = this.value + ' / 10'" class="w-full accent-[#0d9488] cursor-pointer">
+                    </div>
+
+                    <button type="submit" class="w-full py-4 px-6 rounded-2xl bg-[#0d9488] hover:bg-[#0f766e] text-white font-extrabold text-base shadow-md transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-xl"></i>
+                        Enviar Reserva a WhatsApp (+51 939 612 446)
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="bg-slate-900 text-slate-300 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div>
+                <p class="font-extrabold text-white text-base">Jesús Enmanuel Terrones Ninahuaman</p>
+                <p class="text-xs text-slate-400 mt-1">Masoterapia &amp; Charnela Quiropraxia · Lima, Perú</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="https://www.youtube.com/@jesusterronesninahuaman" target="_blank" rel="noopener" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-red-600 text-white text-xs font-bold transition flex items-center gap-2">
+                    <i class="fa-brands fa-youtube"></i> YouTube
+                </a>
+                <a href="https://wa.me/51939612446" target="_blank" rel="noopener" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-emerald-600 text-white text-xs font-bold transition flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp"></i> +51 939 612 446
+                </a>
             </div>
         </div>
     </footer>
 
-    <!-- BOTÓN FLOTANTE CLÍNICO DE WHATSAPP -->
-    <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%2C%20deseo%20agendar%20una%20cita%20de%20masoterapia%20cl%C3%ADnica%20y%20rehabilitaci%C3%B3n" target="_blank" rel="noopener noreferrer" aria-label="Chatear por WhatsApp con Jesús Enmanuel Terrones Ninahuaman" class="fixed bottom-5 right-5 z-50 bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-full p-4 shadow-xl flex items-center gap-2.5 pulse-clinical transition group">
+    <!-- BOTÓN FLOTANTE DE WHATSAPP -->
+    <a href="https://wa.me/51939612446?text=Hola%20Jes%C3%BAs%20Enmanuel%20Terrones%20Ninahuaman%2C%20quisiera%20agendar%20una%20cita%20de%20Masoterapia%20o%20Quiropraxia." target="_blank" rel="noopener" aria-label="Contactar por WhatsApp" class="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-[#25D366] hover:bg-emerald-600 text-white flex items-center justify-center shadow-xl transition transform hover:scale-105">
         <i class="fa-brands fa-whatsapp text-3xl"></i>
-        <span class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap font-heading font-bold text-sm pr-1">
-            Cita Clínica: 939 612 446
-        </span>
     </a>
 
-    <!-- MODAL INTERACTIVO: GUÍA PASO A PASO GITHUB PAGES + DESCARGA DIRECTA DE INDEX.HTML, SITEMAP.XML Y ROBOTS.TXT -->
-    <div id="seo-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border-2 border-sky-100 my-8 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between border-b border-sky-100 pb-4 mb-6">
-                <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-[#0d9488] bg-[#f0fdfa] border border-teal-200 px-3 py-1 rounded-full">
-                        Asistente de Publicación e Indexación en Google
-                    </span>
-                    <h3 class="font-heading font-extrabold text-xl sm:text-2xl text-slate-900 mt-1.5">
-                        Guía Paso a Paso: GitHub Pages + Indexación en Google
-                    </h3>
-                </div>
-                <button onclick="closeSeoModal()" class="w-9 h-9 rounded-full bg-[#f0f9ff] hover:bg-sky-100 flex items-center justify-center text-[#0369a1] cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div class="space-y-5 text-sm text-slate-700">
-                <!-- Paso 1: Descargar o copiar index.html -->
-                <div class="bg-[#f0f9ff] p-5 rounded-2xl border border-sky-200">
-                    <h4 class="font-heading font-bold text-slate-900 text-base mb-1.5 flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-full bg-[#0369a1] text-white text-xs flex items-center justify-center">1</span>
-                        Descarga o copia tu archivo principal <code class="bg-white px-2 py-0.5 rounded border border-sky-200 text-[#0369a1]">index.html</code>
-                    </h4>
-                    <p class="text-slate-600 text-xs sm:text-sm mb-3">
-                        Crea en GitHub un repositorio público llamado <code class="text-[#0369a1] font-bold">jesusterronesninahuaman.github.io</code> y sube este archivo:
-                    </p>
-                    <div class="flex flex-wrap items-center gap-2.5">
-                        <button onclick="downloadFile('index.html', getFullHtmlString(), 'text/html')" class="bg-[#0369a1] hover:bg-[#075985] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition inline-flex items-center gap-2 cursor-pointer shadow-sm">
-                            <i class="fa-solid fa-download"></i> Descargar index.html
-                        </button>
-                        <button onclick="copyFullHtmlCode()" class="bg-white hover:bg-sky-50 text-[#0369a1] border border-sky-200 font-bold px-4 py-2.5 rounded-xl text-xs transition inline-flex items-center gap-2 cursor-pointer">
-                            <i class="fa-regular fa-copy"></i> Copiar código index.html
-                        </button>
-                        <span id="copy-html-msg" class="text-[#0d9488] font-bold text-xs hidden">¡Código copiado con éxito!</span>
-                    </div>
-                </div>
-
-                <!-- Paso 2: Generar y descargar sitemap.xml y robots.txt -->
-                <div class="bg-[#f0fdfa] p-5 rounded-2xl border border-teal-200">
-                    <h4 class="font-heading font-bold text-slate-900 text-base mb-1.5 flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-full bg-[#0d9488] text-white text-xs flex items-center justify-center">2</span>
-                        Descarga o copia <code class="bg-white px-2 py-0.5 rounded border border-teal-200 text-[#0d9488]">sitemap.xml</code> y <code class="bg-white px-2 py-0.5 rounded border border-teal-200 text-[#0d9488]">robots.txt</code>
-                    </h4>
-                    <p class="text-slate-600 text-xs sm:text-sm mb-3">
-                        Verifica tu enlace de GitHub Pages y descarga o copia ambos archivos para subirlos junto a tu `index.html`:
-                    </p>
-                    <div class="mb-3">
-                        <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">URL de tu GitHub Pages:</label>
-                        <input type="url" id="github-custom-url" value="https://jesusterronesninahuaman.github.io/" class="w-full px-3.5 py-2.5 rounded-xl border border-teal-200 bg-white text-xs font-mono text-slate-800">
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="downloadSitemapXml()" class="bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold px-3.5 py-2 rounded-xl text-xs cursor-pointer flex items-center gap-1.5">
-                            <i class="fa-solid fa-download"></i> Descargar sitemap.xml
-                        </button>
-                        <button onclick="copySitemapXml()" class="bg-white hover:bg-teal-50 text-[#0d9488] border border-teal-200 font-bold px-3.5 py-2 rounded-xl text-xs cursor-pointer flex items-center gap-1.5">
-                            <i class="fa-regular fa-copy"></i> Copiar sitemap.xml
-                        </button>
-                        <button onclick="downloadRobotsTxt()" class="bg-[#0369a1] hover:bg-[#075985] text-white font-bold px-3.5 py-2 rounded-xl text-xs cursor-pointer flex items-center gap-1.5">
-                            <i class="fa-solid fa-download"></i> Descargar robots.txt
-                        </button>
-                        <button onclick="copyRobotsTxt()" class="bg-white hover:bg-sky-50 text-[#0369a1] border border-sky-200 font-bold px-3.5 py-2 rounded-xl text-xs cursor-pointer flex items-center gap-1.5">
-                            <i class="fa-regular fa-copy"></i> Copiar robots.txt
-                        </button>
-                    </div>
-                    <p id="copy-seo-files-msg" class="text-[#0d9488] font-bold text-xs mt-2.5 hidden"></p>
-                </div>
-
-                <!-- Paso 3: Indexación inmediata en Google Search Console -->
-                <div class="bg-white p-5 rounded-2xl border border-sky-200">
-                    <h4 class="font-heading font-bold text-slate-900 text-base mb-2 flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-full bg-[#0369a1] text-white text-xs flex items-center justify-center">3</span>
-                        Dar de alta en Google Search Console (Indexación en 24-48h)
-                    </h4>
-                    <ol class="list-decimal list-inside space-y-1.5 text-slate-600 text-xs sm:text-sm">
-                        <li>Entra a <strong>search.google.com/search-console</strong> con tu cuenta de Google.</li>
-                        <li>En <strong>"Prefijo de la URL"</strong> pega <code class="bg-sky-50 text-[#0369a1] px-1.5 py-0.5 rounded font-semibold">https://jesusterronesninahuaman.github.io/</code>.</li>
-                        <li>En el menú izquierdo entra a <strong>Sitemaps</strong>, escribe <code class="bg-sky-50 text-[#0369a1] px-1.5 py-0.5 rounded font-semibold">sitemap.xml</code> y pulsa <strong>Enviar</strong>.</li>
-                        <li>En <strong>Inspección de URLs</strong> pega tu web y haz clic en <strong>"Solicitar indexación"</strong>.</li>
-                        <li>Coloca el enlace de tu web en la descripción de tu canal de YouTube (<strong>@jesusterronesninahuaman</strong>) para conectar tu autoridad con Google.</li>
-                    </ol>
-                </div>
-            </div>
-
-            <div class="mt-6 pt-4 border-t border-sky-100 flex justify-end">
-                <button onclick="closeSeoModal()" class="bg-[#0369a1] hover:bg-[#075985] text-white font-bold px-6 py-2.5 rounded-xl text-sm cursor-pointer">
-                    Cerrar Asistente
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- SCRIPTS CLÍNICOS (GALERÍA YOUTUBE, EVALUADOR DE DOLOR, WHATSAPP Y DESCARGA DE ARCHIVOS SEO) -->
     <script>
-        // Los 6 videos reales del canal https://www.youtube.com/@jesusterronesninahuaman
-        const channelVideos = [
-            {
-                id: 'smqgteGqXPQ',
-                title: '¿Dolor de Ciática? Libera el Nervio Ciático con este Ejercicio',
-                category: 'ciatica',
-                badge: 'Nervio Ciático y Columna',
-                description: 'Maniobra neurodinámica y descompresión clínica para aliviar el dolor irradiado del nervio ciático.'
-            },
-            {
-                id: '6Qj_tnIFSYo',
-                title: 'Alivia el Bruxismo y Dolor de Mandíbula | Liberación Miofascial Facial',
-                category: 'bruxismo',
-                badge: 'Bruxismo y ATM',
-                description: 'Terapia manual clínica sobre músculos maseteros y articulación temporomandibular para eliminar tensión facial.'
-            },
-            {
-                id: 'omq8mwa2Rk8',
-                title: 'Descontractura de Espalda Alta | Liberación de Nudos Musculares',
-                category: 'espalda',
-                badge: 'Espalda Alta y Cervicales',
-                description: 'Abordaje clínico de tejido profundo para liberar contracturas y puntos gatillo interescapulares.'
-            },
-            {
-                id: 'pkeRFh6nV1s',
-                title: 'Masaje Deportivo y Recuperación Funcional de Alta Competencia',
-                category: 'deportiva',
-                badge: 'Fisioterapia Deportiva',
-                description: 'Descarga muscular clínica y movilización articular para optimizar la recuperación del deportista.'
-            },
-            {
-                id: 'TTYjR0GJZ7g',
-                title: 'Terapia Física Instrumental y Agentes Físicos en Rehabilitación',
-                category: 'deportiva',
-                badge: 'Terapia Instrumental',
-                description: 'Aplicación clínica de aparatología fisioterapéutica para acelerar la analgesia y regeneración tisular.'
-            },
-            {
-                id: 'FW7Er3NZAzY',
-                title: 'Fisioterapia Podal y Liberación Miofascial para Fascitis Plantar',
-                category: 'podal',
-                badge: 'Fisioterapia Podal',
-                description: 'Tratamiento clínico de la fascia plantar y biomecánica del pie para recuperar una pisada sin dolor.'
-            }
-        ];
-
-        // Renderizar tarjetas clínicas de videos
-        function renderVideos(filterCategory = 'todos') {
-            const grid = document.getElementById('videos-grid');
-            if (!grid) return;
-
-            const filtered = filterCategory === 'todos'
-                ? channelVideos
-                : channelVideos.filter(v => v.category === filterCategory);
-
-            grid.innerHTML = filtered.map(video => `
-                <article class="bg-white rounded-3xl overflow-hidden border-2 border-sky-100 shadow-sm hover:shadow-xl hover:border-[#0369a1]/30 transition flex flex-col">
-                    <div class="video-short-container border-b border-sky-100">
-                        <iframe 
-                            loading="lazy"
-                            src="https://www.youtube.com/embed/${video.id}?rel=0" 
-                            title="${video.title} - Jesús Enmanuel Terrones Ninahuaman"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            allowfullscreen>
-                        </iframe>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                        <div>
-                            <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-[#0d9488] bg-[#f0fdfa] border border-teal-200 px-3 py-0.5 rounded-full mb-2">
-                                ${video.badge}
-                            </span>
-                            <h3 class="font-heading font-bold text-base text-slate-900 leading-snug mb-1.5">
-                                ${video.title}
-                            </h3>
-                            <p class="text-xs text-slate-600 leading-relaxed mb-4">
-                                ${video.description}
-                            </p>
-                        </div>
-                        <div class="pt-3 border-t border-sky-100 flex items-center justify-between text-xs">
-                            <a href="https://www.youtube.com/shorts/${video.id}" target="_blank" rel="noopener noreferrer"
-                               class="text-[#0369a1] hover:underline font-bold flex items-center gap-1">
-                                <i class="fa-brands fa-youtube text-red-600"></i> Ver en YouTube
-                            </a>
-                            <a href="https://wa.me/51939612446?text=${encodeURIComponent('Hola Jesús Enmanuel, vi su video clínico "' + video.title + '" y deseo agendar una evaluación')}"
-                               target="_blank" rel="noopener noreferrer"
-                               class="bg-[#f0fdfa] hover:bg-teal-100 text-[#0d9488] border border-teal-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition">
-                                <i class="fa-brands fa-whatsapp"></i> Agendar Cita
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            `).join('');
+        function enviarWhatsApp(e) {
+            e.preventDefault();
+            var nombre = document.getElementById('clienteNombre').value.trim();
+            var servicio = document.getElementById('clienteServicio').value;
+            var tension = document.getElementById('clienteTension').value;
+            var mensaje = "Hola Jesús Enmanuel Terrones Ninahuaman, soy " + nombre + ". Vi tu página web y deseo agendar una sesión de: " + servicio + " (Nivel de molestia muscular: " + tension + "/10).";
+            var url = "https://wa.me/51939612446?text=" + encodeURIComponent(mensaje);
+            window.open(url, '_blank');
         }
-
-        // Filtrar videos por categoría clínica
-        function filterVideos(category) {
-            const buttons = document.querySelectorAll('.filter-btn');
-            buttons.forEach(btn => {
-                if (btn.getAttribute('data-filter') === category) {
-                    btn.className = 'filter-btn active bg-[#0369a1] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer';
-                } else {
-                    btn.className = 'filter-btn bg-[#f0f9ff] hover:bg-sky-100 text-[#0369a1] border border-sky-200 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer';
-                }
-            });
-            renderVideos(category);
-        }
-
-        // Extraer ID de cualquier URL de YouTube
-        function extractYouTubeId(url) {
-            if (!url) return null;
-            const regex = /(?:youtube\.com\/(?:shorts\/|watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-            const match = url.match(regex);
-            return match ? match[1] : null;
-        }
-
-        // Previsualizar nuevo video o Short pegando el link
-        function addCustomYoutubeVideo() {
-            const titleInput = document.getElementById('new-yt-title');
-            const urlInput = document.getElementById('new-yt-url');
-            const feedback = document.getElementById('yt-add-feedback');
-
-            const videoId = extractYouTubeId(urlInput.value.trim());
-            const title = titleInput.value.trim() || 'Caso Clínico - Jesús Enmanuel Terrones Ninahuaman';
-
-            if (!videoId) {
-                feedback.textContent = 'Por favor pega un enlace válido de YouTube o YouTube Shorts (ej. https://www.youtube.com/shorts/smqgteGqXPQ).';
-                feedback.className = 'text-xs font-semibold mt-2.5 text-red-600 block';
-                return;
-            }
-
-            channelVideos.unshift({
-                id: videoId,
-                title: title,
-                category: 'espalda',
-                badge: 'Nuevo Video Clínico',
-                description: 'Procedimiento clínico del canal oficial @jesusterronesninahuaman.'
-            });
-
-            filterVideos('todos');
-            urlInput.value = '';
-            titleInput.value = '';
-            feedback.textContent = '¡Video clínico integrado y previsualizado en primer lugar de la galería!';
-            feedback.className = 'text-xs font-semibold mt-2.5 text-[#0d9488] block';
-        }
-
-        // Seleccionar dolencia desde las tarjetas de especialidades
-        function selectClinicalCondition(conditionValue) {
-            const select = document.getElementById('patient-service');
-            if (select) {
-                select.value = conditionValue;
-            }
-        }
-
-        // Actualizar indicador visual de escala de dolor (1 al 10)
-        function updatePainScale(val) {
-            const badge = document.getElementById('pain-badge');
-            const num = parseInt(val, 10);
-            let label = 'Molestia Leve';
-            let colorClass = 'bg-emerald-600';
-
-            if (num >= 4 && num <= 6) {
-                label = 'Dolor Moderado';
-                colorClass = 'bg-amber-500';
-            } else if (num >= 7 && num <= 8) {
-                label = 'Dolor Intenso';
-                colorClass = 'bg-orange-600';
-            } else if (num >= 9) {
-                label = 'Dolor Agudo / Urgente';
-                colorClass = 'bg-red-600';
-            }
-
-            badge.textContent = `Nivel ${num} / 10 (${label})`;
-            badge.className = `${colorClass} text-white font-heading font-extrabold text-xs px-3 py-1 rounded-full shadow-sm`;
-        }
-
-        // Enviar pre-evaluación clínica por WhatsApp al +51 939 612 446
-        function sendBookingToWhatsApp(event) {
-            event.preventDefault();
-            const name = document.getElementById('patient-name').value.trim();
-            const service = document.getElementById('patient-service').value;
-            const pain = document.getElementById('patient-pain').value;
-            const zone = document.getElementById('patient-zone').value.trim() || 'Por detallar en consulta';
-            const schedule = document.getElementById('patient-schedule').value;
-
-            let message = `Hola Lic. Jesús Enmanuel Terrones, deseo agendar una cita clínica:\n\n`;
-            message += `• *Paciente:* ${name}\n`;
-            message += `• *Dolencia / Tratamiento:* ${service}\n`;
-            message += `• *Nivel de Dolor (Escala 1-10):* ${pain}/10\n`;
-            message += `• *Zona / Tiempo de molestia:* ${zone}\n`;
-            message += `• *Turno preferido:* ${schedule}`;
-
-            const whatsappUrl = `https://wa.me/51939612446?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-        }
-
-        // Menú móvil
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-        }
-
-        // Modal de Guía GitHub Pages + Google
-        function openSeoModal() {
-            document.getElementById('seo-modal').classList.remove('hidden');
-        }
-        function closeSeoModal() {
-            document.getElementById('seo-modal').classList.add('hidden');
-        }
-
-        // Obtener HTML completo limpio
-        function getFullHtmlString() {
-            return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-        }
-
-        // Descargar archivo directamente en el navegador
-        function downloadFile(filename, content, mimeType) {
-            const blob = new Blob([content], { type: mimeType + ';charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // Copiar al portapapeles
-        function copyTextToClipboard(text, callback) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-9999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                if (callback) callback();
-            } catch (err) {
-                console.error('Error al copiar', err);
-            }
-            document.body.removeChild(textArea);
-        }
-
-        function copyFullHtmlCode() {
-            copyTextToClipboard(getFullHtmlString(), () => {
-                const msg = document.getElementById('copy-html-msg');
-                msg.classList.remove('hidden');
-                setTimeout(() => msg.classList.add('hidden'), 4000);
-            });
-        }
-
-        function getSitemapXmlString() {
-            const baseUrl = (document.getElementById('github-custom-url').value.trim() || 'https://jesusterronesninahuaman.github.io/').replace(/\/?$/, '/');
-            const today = new Date().toISOString().split('T')[0];
-            return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${baseUrl}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-</urlset>`;
-        }
-
-        function getRobotsTxtString() {
-            const baseUrl = (document.getElementById('github-custom-url').value.trim() || 'https://jesusterronesninahuaman.github.io/').replace(/\/?$/, '/');
-            return `User-agent: *
-Allow: /
-
-Sitemap: ${baseUrl}sitemap.xml`;
-        }
-
-        function downloadSitemapXml() {
-            downloadFile('sitemap.xml', getSitemapXmlString(), 'application/xml');
-        }
-
-        function copySitemapXml() {
-            copyTextToClipboard(getSitemapXmlString(), () => {
-                const msg = document.getElementById('copy-seo-files-msg');
-                msg.textContent = '¡Código de sitemap.xml copiado al portapapeles!';
-                msg.classList.remove('hidden');
-            });
-        }
-
-        function downloadRobotsTxt() {
-            downloadFile('robots.txt', getRobotsTxtString(), 'text/plain');
-        }
-
-        function copyRobotsTxt() {
-            copyTextToClipboard(getRobotsTxtString(), () => {
-                const msg = document.getElementById('copy-seo-files-msg');
-                msg.textContent = '¡Código de robots.txt copiado al portapapeles!';
-                msg.classList.remove('hidden');
-            });
-        }
-
-        // Inicialización
-        window.addEventListener('DOMContentLoaded', () => {
-            renderVideos('todos');
-            document.getElementById('current-year').textContent = new Date().getFullYear();
-        });
     </script>
-
-</body></html>
+</body>
+</html>
